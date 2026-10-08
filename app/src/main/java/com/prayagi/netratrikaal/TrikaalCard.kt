@@ -58,7 +58,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
     val placeCtx = androidx.compose.ui.platform.LocalContext.current
     var place by remember { mutableStateOf(TrikaalPlaces.load(placeCtx)) }
     Card(Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Night2,contentColor=Cream)) { Column(Modifier.padding(16.dp)) {
-        Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold)
+        Text("✦ NETRA TRIKAL DRISHTI ✦",style=MaterialTheme.typography.titleLarge,color=Gold)
         Text("Vedic chart calculations • Lahiri • local profiles")
         OutlinedButton(onClick={open=true},colors=ButtonDefaults.outlinedButtonColors(contentColor=Gold),border=androidx.compose.foundation.BorderStroke(1.dp,Gold)){Text("Open Trikaal / त्रिकाल खोलें")}
     } }
@@ -71,7 +71,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                     var hasKundli by remember { mutableStateOf(false) }
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
+                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAL DRISHTI ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
                         TrikaalLocationChoice(place) { place = it }
                         TrikaalContent { hasKundli = it }
                         TrikaalSoon()
