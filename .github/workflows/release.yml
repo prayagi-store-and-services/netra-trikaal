@@ -1,10 +1,10 @@
-name: Signed Release (beta = pre-release)
+name: Signed Release
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag (must equal v plus versionName in app/build.gradle.kts, for example v0.1.0-beta.1)
+        description: Release tag (must equal v plus versionName in app/build.gradle.kts, for example v1.0.0)
         required: true
       notes:
         description: What changed (shown in the in-app update prompt)
@@ -77,7 +77,5 @@ jobs:
           SIZE="$(stat -c %s "$D/app-release.apk")"
           jq -n --arg tag "$TAG" --arg vn "$VNAME" --argjson vc "$VCODE" --arg sha "$SHA" --argjson size "$SIZE" --arg notes "$NOTES" \
             '{tag:$tag,versionName:$vn,versionCode:$vc,sha256:$sha,size:$size,notes:$notes}' > "$D/latest.json"
-          PRE=""
-          case "$VNAME" in *beta*|*alpha*|*rc*) PRE="--prerelease";; esac
           gh release create "$TAG" "$D/app-release.apk" "$NAMED" "$D/latest.json" \
-            --title "$TAG" --notes "$NOTES" --target "$GITHUB_SHA" $PRE
+            --title "$TAG" --notes "$NOTES" --target "$GITHUB_SHA"
