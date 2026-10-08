@@ -1,85 +1,96 @@
-/*
-   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
-   of Astrodienst AG, Switzerland from the original C Code to Java. For
-   copyright see the original copyright notices below and additional
-   copyright notes in the file named LICENSE, or - if this file is not
-   available - the copyright notes at http://www.astro.ch/swisseph/ and
-   following. 
+package com.prayagi.netratrikaal
 
-   For any questions or comments regarding this port to Java, you should
-   ONLY contact me and not Astrodienst, as the Astrodienst AG is not involved
-   in this port in any way.
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
+import androidx.core.os.CancellationSignal
+import android.os.Handler
+import android.os.Looper
+import com.prayagi.trikaal.PRAYAGRAJ
+import com.prayagi.trikaal.PanchangPlace
+import java.time.ZoneId
 
-   Thomas Mack, mack@ifis.cs.tu-bs.de, 23rd of April 2001
-
-*/
-/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
-
-  License conditions
-  ------------------
-
-  This file is part of Swiss Ephemeris.
-
-  Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
-  or distributor accepts any responsibility for the consequences of using it,
-  or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.
-
-  Swiss Ephemeris is made available by its authors under a dual licensing
-  system. The software developer, who uses any part of Swiss Ephemeris
-  in his or her software, must choose between one of the two license models,
-  which are
-  a) GNU public license version 2 or later
-  b) Swiss Ephemeris Professional License
-
-  The choice must be made before the software developer distributes software
-  containing parts of Swiss Ephemeris to others, and before any public
-  service using the developed software is activated.
-
-  If the developer choses the GNU GPL software license, he or she must fulfill
-  the conditions of that license, which includes the obligation to place his
-  or her whole software project under the GNU GPL or a compatible license.
-  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
-
-  If the developer choses the Swiss Ephemeris Professional license,
-  he must follow the instructions as found in http://www.astro.com/swisseph/
-  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
-  and sign the corresponding license contract.
-
-  The License grants you the right to use, copy, modify and redistribute
-  Swiss Ephemeris, but only under certain conditions described in the License.
-  Among other things, the License requires that the copyright notices and
-  this notice be preserved on all copies.
-
-  Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
-
-  The authors of Swiss Ephemeris have no control or influence over any of
-  the derived works, i.e. over software or services created by other
-  programmers which use Swiss Ephemeris functions.
-
-  The names of the authors or of the copyright holder (Astrodienst) must not
-  be used for promoting any software, product or service which uses or contains
-  the Swiss Ephemeris. This copyright notice is the ONLY place where the
-  names of the authors can legally appear, except in cases where they have
-  given special permission in writing.
-
-  The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
-  for promoting such software, products or services.
-*/
-package swisseph;
-
-class Epsilon
-		implements java.io.Serializable
-		{
-  /* obliquity of ecliptic */
-  double teps, eps, seps, ceps;         /* jd, eps, sin(eps), cos(eps) */
-
-  void clearData() {
-    teps=0.0;
-    eps=0.0;
-    seps=0.0;
-    ceps=0.0;
-  }
-
-
+/** Optional place choice for panchang timings. Stored only on this phone, never sent anywhere. Declined or unavailable falls back to Prayagraj. */
+object TrikaalPlaces {
+    private const val P = "trikaal_place"
+    /** "unset", "yes" or "no". */
+    fun choice(c: Context): String = c.getSharedPreferences(P, 0).getString("choice", "unset") ?: "unset"
+    fun setChoice(c: Context, v: String) { c.getSharedPreferences(P, 0).edit().putString("choice", v).apply() }
+    fun load(c: Context): PanchangPlace {
+        val sp = c.getSharedPreferences(P, 0)
+        if (sp.getString("choice", "unset") != "yes" || !sp.contains("lat")) return PRAYAGRAJ
+        return PanchangPlace("Your location", Double.fromBits(sp.getLong("lat", 0)), Double.fromBits(sp.getLong("lon", 0)), ZoneId.systemDefault())
     }
+    fun save(c: Context, lat: Double, lon: Double) {
+        c.getSharedPreferences(P, 0).edit().putString("choice", "yes").putLong("lat", lat.toBits()).putLong("lon", lon.toBits()).apply()
+    }
+    @SuppressLint("MissingPermission")
+    fun lastKnown(c: Context): Pair<Double, Double>? {
+        if (ContextCompat.checkSelfPermission(c, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return null
+        val lm = c.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
+        val best = lm.getProviders(true).mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }.maxByOrNull { it.time }
+        return best?.let { it.latitude to it.longitude }
+    }
+}
+
+/** Asks the phone once for a fresh approximate fix. Calls back exactly once, with null when no provider is on or nothing arrives in 20 s. Nothing leaves the phone. */
+@SuppressLint("MissingPermission")
+fun requestFreshFix(c: Context, done: (Pair<Double, Double>?) -> Unit) {
+    val lm = c.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+    val provider = lm?.let { m -> listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER).firstOrNull { runCatching { m.isProviderEnabled(it) }.getOrDefault(false) } }
+    if (lm == null || provider == null || ContextCompat.checkSelfPermission(c, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) { done(null); return }
+    var finished = false
+    val cancel = CancellationSignal()
+    val handler = Handler(Looper.getMainLooper())
+    fun finish(v: Pair<Double, Double>?) { if (!finished) { finished = true; handler.removeCallbacksAndMessages(null); done(v) } }
+    handler.postDelayed({ cancel.cancel(); finish(null) }, 20_000)
+    LocationManagerCompat.getCurrentLocation(lm, provider, cancel, ContextCompat.getMainExecutor(c)) { loc -> finish(loc?.let { it.latitude to it.longitude }) }
+}
+
+@Composable fun TrikaalLocationChoice(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit) {
+    val ctx = LocalContext.current
+    var choice by remember { mutableStateOf(TrikaalPlaces.choice(ctx)) }
+    var note by remember { mutableStateOf("") }
+    fun use(ll: Pair<Double, Double>?) {
+        if (ll == null) { TrikaalPlaces.setChoice(ctx, "no"); choice = "no"; note = "Location unavailable on this phone right now (is location switched on?). Using Prayagraj."; onPlace(PRAYAGRAJ) }
+        else { TrikaalPlaces.save(ctx, ll.first, ll.second); choice = "yes"; note = ""; onPlace(TrikaalPlaces.load(ctx)) }
+    }
+    fun apply() {
+        val ll = TrikaalPlaces.lastKnown(ctx)
+        if (ll != null) use(ll) else { note = "Finding your location..."; requestFreshFix(ctx) { use(it) } }
+    }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        if (ok) apply() else { TrikaalPlaces.setChoice(ctx, "no"); choice = "no"; note = "Permission declined. Using Prayagraj."; onPlace(PRAYAGRAJ) }
+    }
+    fun ask() { if (TrikaalPlaces.lastKnown(ctx) != null) apply() else launcher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) }
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Place for timings: ${place.label}", style = MaterialTheme.typography.titleSmall)
+            if (choice == "unset") {
+                Text("Rahu Kaal, muhurat and tithi change with place. Use your approximate location? It stays on this phone and is never sent anywhere. If you say no, Prayagraj is used.", style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { ask() }) { Text("Yes, use my location") }
+                    OutlinedButton(onClick = { TrikaalPlaces.setChoice(ctx, "no"); choice = "no"; onPlace(PRAYAGRAJ) }) { Text("No, use Prayagraj") }
+                }
+            } else {
+                if (note.isNotEmpty()) Text(note, style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { ask() }) { Text(if (choice == "yes") "Refresh my location" else "Use my location") }
+                    if (choice == "yes") OutlinedButton(onClick = { TrikaalPlaces.setChoice(ctx, "no"); choice = "no"; onPlace(PRAYAGRAJ) }) { Text("Use Prayagraj") }
+                }
+            }
+        }
+    }
+}
