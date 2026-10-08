@@ -88,6 +88,15 @@ jobs:
                   b = re.findall(r"\d+", e.get("bounds", ""))
                   if len(b) == 4:
                       out.append(((e.get("text") or "") + " " + (e.get("content-desc") or "")).strip(), ) if False else out.append(((e.get("text") or e.get("content-desc") or ""), tuple(map(int, b))))
+              for t, b in out:
+                  if "isn't responding" in t and not getattr(nodes, "busy", False):
+                      nodes.busy = True
+                      for t2, b2 in out:
+                          if t2.strip() == "Wait":
+                              sh("shell", "input", "tap", str((b2[0] + b2[2]) // 2), str((b2[1] + b2[3]) // 2))
+                              time.sleep(2)
+                      nodes.busy = False
+                      return nodes()
               return out
           def find(sub):
               for t, b in nodes():
