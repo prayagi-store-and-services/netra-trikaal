@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.NetraTrikaal" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/ic_background</item>
+    </style>
+    <color name="ic_background">#0A0E2A</color>
+</resources>
