@@ -27,8 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val Ivory=Color(0xFFFAF7F2)
-private val Maroon=Color(0xFF5E1724)
 private val Saffron=Color(0xFFC85A17)
 private val Night=Color(0xFF0A0E2A)
 private val Night2=Color(0xFF1B2150)
@@ -180,10 +178,10 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
 
 /** North chart: fixed houses; South chart: fixed signs. Labels carry occupants and sign/house. */
 @Composable private fun KundliDrawing(c:Chart,layout:String) {
-    Canvas(Modifier.fillMaxWidth().aspectRatio(1f).background(Ivory).padding(8.dp)) {
+    Canvas(Modifier.fillMaxWidth().aspectRatio(1f).background(Night2).padding(8.dp)) {
         val w=size.width;val h=size.height;val stroke=2.dp.toPx()
-        val paint=android.graphics.Paint().apply{color=android.graphics.Color.rgb(94,23,36);textSize=11.dp.toPx();textAlign=android.graphics.Paint.Align.CENTER;isAntiAlias=true}
-        fun line(x1:Float,y1:Float,x2:Float,y2:Float)=drawLine(Maroon,Offset(x1*w,y1*h),Offset(x2*w,y2*h),stroke)
+        val paint=android.graphics.Paint().apply{color=android.graphics.Color.rgb(255,244,220);textSize=11.dp.toPx();textAlign=android.graphics.Paint.Align.CENTER;isAntiAlias=true}
+        fun line(x1:Float,y1:Float,x2:Float,y2:Float)=drawLine(Gold,Offset(x1*w,y1*h),Offset(x2*w,y2*h),stroke)
         fun label(x:Float,y:Float,title:String,ps:List<Position>){
             drawContext.canvas.nativeCanvas.drawText(title,x*w,y*h,paint)
             ps.chunked(3).take(3).forEachIndexed{i,p->drawContext.canvas.nativeCanvas.drawText(p.joinToString(" "){it.graha.name.take(2)},x*w,y*h+(i+1)*14.dp.toPx(),paint)}
