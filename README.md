@@ -1,10 +1,10 @@
-# NETRA TRIKAAL
+# NETRA TRIKAL DRISHTI
 
 Private-by-design Vedic astrology for Android: panchang, kundli, dasha, gochar and daily guidance. Part of the [Netra Eco](https://prayagi-store-and-services.github.io/netra-eco/) family by Prayagi Store and Services.
 
 ## Status: first release in preparation
 
-Trikaal is a separate app (applicationId `com.prayagi.netratrikaal`). Nothing is released yet. Each release is a normal GitHub release with a direct APK link, size and SHA-256, published only when CI is green. Milestone: [Trikaal launch](https://github.com/prayagi-store-and-services/netra-trikaal/milestone/1).
+Netra Trikal Drishti (formerly working-named Trikaal) is a separate app (applicationId `com.prayagi.netratrikaal`). Nothing is released yet. Each release is a normal GitHub release with a direct APK link, size and SHA-256, published only when CI is green. Milestone: [Trikaal launch](https://github.com/prayagi-store-and-services/netra-trikaal/milestone/1).
 
 ## What works today
 
