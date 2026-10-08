@@ -179,7 +179,7 @@ jobs:
                   if tap("year"):
                       time.sleep(1.5)
                       shot("year-list")
-                      for _i in range(14):
+                      for _i in range(30):
                           if find("1990"):
                               break
                           sh("shell", "input", "swipe", "540", "1000", "540", "1250", "900")
