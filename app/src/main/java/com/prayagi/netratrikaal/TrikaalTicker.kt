@@ -29,9 +29,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private val RedTone = Color(0xFFC62828)
-private val GreenTone = Color(0xFF2E7D32)
-private val BlueTone = Color(0xFF1565C0)
+private val RedTone = Color(0xFFFF8A80)
+private val GreenTone = Color(0xFFA5E6A9)
+private val BlueTone = Color(0xFF9CCBFF)
 private val VAARA = mapOf(DayOfWeek.SUNDAY to "Ravivar", DayOfWeek.MONDAY to "Somvar", DayOfWeek.TUESDAY to "Mangalvar",
     DayOfWeek.WEDNESDAY to "Budhvar", DayOfWeek.THURSDAY to "Guruvar", DayOfWeek.FRIDAY to "Shukravar", DayOfWeek.SATURDAY to "Shanivar")
 private val HM = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
@@ -106,9 +106,9 @@ private fun left(from: Instant, to: Instant): String {
             }
         }
     }
-    Box(Modifier.fillMaxWidth().height(40.dp).background(Color(0xFFFFF8E1)).border(1.dp, Color(0xFF5E1724)).clipToBounds().onSizeChanged { boxW = it.width },
+    Box(Modifier.fillMaxWidth().height(40.dp).background(Color(0xFF1B2150)).border(1.dp, Color(0xFFF2C14E)).clipToBounds().onSizeChanged { boxW = it.width },
         contentAlignment = Alignment.CenterStart) {
-        Text(text, maxLines = 1, softWrap = false, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp),
+        Text(text, maxLines = 1, softWrap = false, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp, color = Color(0xFFFFF4DC)),
             onTextLayout = { textW = it.size.width },
             modifier = Modifier.wrapContentWidth(Alignment.Start, unbounded = true).offset { IntOffset(offset.roundToInt(), 0) })
     }
