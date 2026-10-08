@@ -1,6 +1,6 @@
-# Security notes - Netra Trikaal
+# Security notes - Netra Trikal Drishti
 
-Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
+Netra Trikal Drishti is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
 ## Data and permissions (1.0.0)
 
