@@ -2,7 +2,7 @@
 
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
-## Data and permissions (0.1.0-beta.1)
+## Data and permissions (1.0.0)
 
 - All calculation runs on the phone with the Swiss Ephemeris (Moshier mode, AGPL, source in `astro-core`).
 - Birth name, date, time, place and up to 5 saved profiles stay in the app's private storage. Nothing is sent anywhere.
