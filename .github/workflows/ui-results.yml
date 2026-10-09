@@ -194,23 +194,16 @@ jobs:
                   tap("Choose date of birth")
                   time.sleep(2)
                   shot("date-picker")
-                  if tap("year"):
+                  if tap("text input"):
                       time.sleep(1.5)
-                      shot("year-list")
-                      for _i in range(90):
-                          if find("1990"):
-                              break
-                          sh("shell", "input", "swipe", "540", "800", "540", "1500", "500")
-                          time.sleep(1.2)
-                      shot("year-list-1990-visible")
-                      tap("1990")
+                      shot("date-text-mode")
+                      b = find("yyyy") or find("Date")
+                      if b:
+                          sh("shell", "input", "tap", str((b[0] + b[2]) // 2), str((b[1] + b[3]) // 2))
+                          time.sleep(0.8)
+                      sh("shell", "input", "text", "01011990")
                       time.sleep(1.5)
-                      if not tap("October 1, 1990"):
-                          for tx, bb in nodes():
-                              if tx.strip() == "1" and bb[1] > 650:
-                                  sh("shell", "input", "tap", str((bb[0] + bb[2]) // 2), str((bb[1] + bb[3]) // 2))
-                                  time.sleep(1.5)
-                                  break
+                      shot("date-typed-1990")
                   shot("date-1-selected")
                   tap("OK")
                   shot("after-date-ok")
