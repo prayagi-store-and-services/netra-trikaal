@@ -1,0 +1,84 @@
+name: Release APK smoke (manual check)
+
+# Installs the exact APK from a published GitHub release on an emulator and takes first-launch screenshots.
+# No source build. For finding "blank screen" problems in the file people actually download.
+on:
+  pull_request:
+    paths: ['.github/workflows/release-smoke.yml']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to test
+        required: true
+        default: v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Download the release APK
+        env:
+          TAG: ${{ inputs.tag || 'v1.0.0' }}
+        run: |
+          curl -sSL -o release.apk "https://github.com/${{ github.repository }}/releases/download/${TAG}/app-release.apk"
+          ls -l release.apk
+          sha256sum release.apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Create and boot emulator
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+          mkdir -p $HOME/.android/avd
+          export ANDROID_AVD_HOME=$HOME/.android/avd
+          echo no | avdmanager create avd -n t -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force
+          nohup $ANDROID_HOME/emulator/emulator -avd t -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -accel on > emu.log 2>&1 &
+          sleep 20
+          timeout 300 adb wait-for-device || { tail -50 emu.log; exit 1; }
+          booted=0
+          for i in $(seq 1 90); do
+            if [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; then booted=1; break; fi
+            sleep 5
+          done
+          [ "$booted" = 1 ] || { tail -50 emu.log; exit 1; }
+          adb shell input keyevent 82
+      - name: Install, launch, screenshot
+        run: |
+          mkdir -p shots
+          adb install -r release.apk
+          adb logcat -c
+          adb shell monkey -p com.prayagi.netratrikaal -c android.intent.category.LAUNCHER 1
+          for s in 3 8 15; do
+            sleep $s
+            adb exec-out screencap -p > shots/launch-after-${s}s-step.png
+          done
+          adb shell uiautomator dump /sdcard/u.xml || true
+          adb shell cat /sdcard/u.xml | sed 's/></>\n</g' | grep -o 'text="[^"]*"' | grep -v 'text=""' | head -60 > shots/visible-text.txt || true
+          adb logcat -d | grep -i -E 'FATAL|AndroidRuntime|netratrikaal|ANR' | head -80 > shots/logcat.txt || true
+          adb shell dumpsys package com.prayagi.netratrikaal | grep -E 'versionName|versionCode' > shots/package.txt || true
+          cat shots/package.txt shots/visible-text.txt shots/logcat.txt
+      - name: Publish screenshots to a branch for inspection
+        if: always()
+        run: |
+          git config user.name "ui-shots"
+          git config user.email "ui-shots@users.noreply.github.com"
+          git checkout --orphan smoke-shots-${{ github.run_id }}
+          git rm -rf . >/dev/null 2>&1 || true
+          git add -f shots
+          git commit -m "Release APK smoke shots for run ${{ github.run_id }}"
+          git push origin smoke-shots-${{ github.run_id }}
