@@ -72,10 +72,12 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
+                        if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it }) else {
                         TrikaalLocationChoice(place) { place = it }
                         if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
                         TrikaalContent { hasKundli = it }
                         TrikaalSoon()
+                        }
                         if(hasKundli) androidx.compose.foundation.layout.Spacer(Modifier.height(80.dp))
                     }
                     if(hasKundli) androidx.compose.foundation.layout.Box(Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(4.dp)) { KundliPdfSoon() }
@@ -86,7 +88,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
     }
 }
 
-@Composable private fun TrikaalContent(onKundli: (Boolean) -> Unit = {}) {
+@Composable internal fun TrikaalContent(onKundli: (Boolean) -> Unit = {}) {
     val context=LocalContext.current;val scope=rememberCoroutineScope()
     var profile by remember { mutableStateOf(TrikaalProfile("","","","","","","","")) }
     var profiles by remember { mutableStateOf(TrikaalProfiles.read(context)) }
