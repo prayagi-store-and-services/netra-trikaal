@@ -197,7 +197,11 @@ jobs:
                   if tap("text input"):
                       time.sleep(1.5)
                       shot("date-text-mode")
-                      b = find("yyyy") or find("Date")
+                      b = None
+                      for tx, bb in nodes():
+                          if tx.strip() == "Date":
+                              b = bb
+                              break
                       if b:
                           sh("shell", "input", "tap", str((b[0] + b[2]) // 2), str((b[1] + b[3]) // 2))
                           time.sleep(0.8)
