@@ -27,7 +27,7 @@ private val PLANNED = listOf(
 @Composable fun KundliPdfSoon() {
     var show by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = androidx.compose.ui.Alignment.End) {
-        if (show) androidx.compose.material3.Surface(color = androidx.compose.ui.graphics.Color(0xFF262D66), contentColor = androidx.compose.ui.graphics.Color(0xFFFFF4DC), shadowElevation = 4.dp, shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) {
+        if (show) androidx.compose.material3.Surface(color = Palette.nightHigh, contentColor = androidx.compose.ui.graphics.Color(0xFFFFF4DC), shadowElevation = 4.dp, shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)) {
             Text("Kundli PDF is a future plan and is not available in this version.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(8.dp))
         }
         androidx.compose.material3.ExtendedFloatingActionButton(onClick = { show = !show }) { Text("Download PDF (future plan)") }

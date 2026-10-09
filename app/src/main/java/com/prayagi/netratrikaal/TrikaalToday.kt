@@ -40,7 +40,7 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
         day = withContext(Dispatchers.Default) { Panchang.day(now, place) }
         moon = withContext(Dispatchers.Default) { AstroCore.currentPositions(now) }
     }
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF1B2150), contentColor = Color(0xFFFFF4DC))) {
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
         Column(Modifier.padding(16.dp)) {
             Text("Today / आज · ${place.label}", style = MaterialTheme.typography.titleMedium, color = Color(0xFFF2C14E))
             when (val d = day) {

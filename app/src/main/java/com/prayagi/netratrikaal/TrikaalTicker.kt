@@ -106,7 +106,7 @@ private fun left(from: Instant, to: Instant): String {
             }
         }
     }
-    Box(Modifier.fillMaxWidth().height(40.dp).background(Color(0xFF1B2150)).border(1.dp, Color(0xFFF2C14E)).clipToBounds().onSizeChanged { boxW = it.width },
+    Box(Modifier.fillMaxWidth().height(40.dp).background(Palette.night2).border(1.dp, Color(0xFFF2C14E)).clipToBounds().onSizeChanged { boxW = it.width },
         contentAlignment = Alignment.CenterStart) {
         Text(text, maxLines = 1, softWrap = false, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp, color = Color(0xFFFFF4DC)),
             onTextLayout = { textW = it.size.width },

@@ -28,14 +28,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private val Saffron=Color(0xFFC85A17)
-private val Night=Color(0xFF0A0E2A)
-private val Night2=Color(0xFF1B2150)
-private val NightHigh=Color(0xFF262D66)
+private val Night get()=Palette.night
+private val Night2 get()=Palette.night2
+private val NightHigh get()=Palette.nightHigh
 private val Gold=Color(0xFFF2C14E)
 private val Cream=Color(0xFFFFF4DC)
 /** Static starry night sky (no animation, no network). Stars are fixed by a seed so the sky never changes between runs. */
 @Composable private fun StarrySky(modifier:Modifier=Modifier) {
-    Canvas(modifier.background(Brush.verticalGradient(listOf(Color(0xFF070A22),Color(0xFF151245),Color(0xFF2A1A52))))) {
+    Canvas(modifier.background(Brush.verticalGradient(listOf(Palette.skyTop,Palette.skyMid,Palette.skyLow)))) {
         val r=Random(108)
         repeat(220){
             val x=r.nextFloat()*size.width;val y=r.nextFloat()*size.height
@@ -48,7 +48,7 @@ private val Cream=Color(0xFFFFF4DC)
         val cx=size.width*0.86f;val cy=size.height*0.07f;val mr=22f*density
         drawCircle(Gold.copy(alpha=0.18f),mr*1.9f,Offset(cx,cy))
         drawCircle(Color(0xFFFFE9A8),mr,Offset(cx,cy))
-        drawCircle(Color(0xFF151245),mr*0.88f,Offset(cx+mr*0.45f,cy-mr*0.1f))
+        drawCircle(Palette.skyMid,mr*0.88f,Offset(cx+mr*0.45f,cy-mr*0.1f))
     }
 }
 private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
@@ -63,7 +63,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
         OutlinedButton(onClick={open=true},colors=ButtonDefaults.outlinedButtonColors(contentColor=Gold),border=androidx.compose.foundation.BorderStroke(1.dp,Gold)){Text("Open Trikaal / त्रिकाल खोलें")}
     } }
     if(open) androidx.compose.ui.window.Dialog(onDismissRequest={open=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false)) {
-        MaterialTheme(colorScheme=darkColorScheme(primary=Gold,onPrimary=Night,secondary=Color(0xFFFFB74D),background=Night,surface=Night,onSurface=Cream,onBackground=Cream,surfaceVariant=Night2,onSurfaceVariant=Cream,surfaceContainerHigh=NightHigh,surfaceContainerHighest=NightHigh,surfaceContainer=Night2,outline=Gold,outlineVariant=Color(0xFF5A5F99))) {
+        MaterialTheme(colorScheme=darkColorScheme(primary=Gold,onPrimary=Night,secondary=Color(0xFFFFB74D),background=Night,surface=Night,onSurface=Cream,onBackground=Cream,surfaceVariant=Night2,onSurfaceVariant=Cream,surfaceContainerHigh=NightHigh,surfaceContainerHighest=NightHigh,surfaceContainer=Night2,outline=Gold,outlineVariant=Palette.outlineVariant)) {
             Surface(Modifier.fillMaxSize(),color=Night) {
                 StarrySky(Modifier.fillMaxSize())
                 Column(Modifier.safeDrawingPadding().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
