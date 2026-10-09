@@ -2,6 +2,10 @@
 
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
+## First screen (1.0.1)
+
+When no profile is saved, the first screen now shows a Today card (tithi, Moon nakshatra, Rahu Kaal, Yamaganda, Gulika Kaal, Abhijit, sunrise and sunset) for the chosen place. It also has a Rashifal picker: choose your Moon sign to see today's gochara result from that sign. It uses the same on-phone calculation as the ticker. No new permission, library or network call.
+
 ## Data and permissions (1.0.0)
 
 - All calculation runs on the phone with the Swiss Ephemeris (Moshier mode, AGPL, source in `astro-core`).

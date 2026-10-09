@@ -73,6 +73,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
                         TrikaalLocationChoice(place) { place = it }
+                        if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
                         TrikaalContent { hasKundli = it }
                         TrikaalSoon()
                         if(hasKundli) androidx.compose.foundation.layout.Spacer(Modifier.height(80.dp))
