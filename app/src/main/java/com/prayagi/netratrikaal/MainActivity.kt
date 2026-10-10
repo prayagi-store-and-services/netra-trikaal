@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
             setContentView(box)
             return
         }
+        com.prayagi.netratrikaal.festival.JayMataDi.greetIfDue(this)
         setContent {
             MaterialTheme { Surface(Modifier.fillMaxSize()) { TrikaalCard(initiallyOpen = true) } }
         }
