@@ -135,6 +135,11 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
         if(c.input.placeLabel?.isNotBlank()==true) Text("Place at birth / जन्म स्थान: ${c.input.placeLabel}",style=MaterialTheme.typography.bodyMedium)
         Text("Lagna / लग्न: ${SIGN_NAMES[c.lagnaRashi]} ${deg(c.lagna%30)}")
         Text("Moon / चंद्र: ${SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi]}")
+        run {
+            val spokenPeriods=remember(c){vimshottariDasha(c)}
+            val cur=currentPeriod(spokenPeriods,asOf ?: Instant.now())
+            ListenButton(listenSummary(SIGN_NAMES[c.lagnaRashi],SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi],cur?.let{"${it.first.lord.label} and ${it.second?.lord?.label ?: "Unavailable"}"}))
+        }
         if(view!="Quick") {
             Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text("$v chart")}} }
             KundliDrawing(c,layout)
