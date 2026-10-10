@@ -2,6 +2,10 @@
 
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
+## Region guard (v1.0.4)
+
+The app refuses to open when the phone's SIM or network country is on a built-in block list (PK, BD, AF, CN, KP). The check runs only on the phone, uses no permission, no network call and no IP lookup, and nothing is stored or sent. With no signal, or an Indian SIM, it never blocks. It is a deterrent, not foolproof: removing the SIM or changing the language region bypasses it.
+
 ## First screen (1.0.1)
 
 When no profile is saved, the first screen now shows a Today card (tithi, Moon nakshatra, Rahu Kaal, Yamaganda, Gulika Kaal, Abhijit, sunrise and sunset) for the chosen place. It also has a Rashifal picker: choose your Moon sign to see today's gochara result from that sign. It uses the same on-phone calculation as the ticker. No new permission, library or network call.
