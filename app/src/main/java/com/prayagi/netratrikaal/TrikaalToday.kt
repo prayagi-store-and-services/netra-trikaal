@@ -62,27 +62,35 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
                 }
             }
             if (mode != 1) {
-            Text("Rashifal / राशिफल: tap your Moon sign (rashi)", style = MaterialTheme.typography.titleSmall, color = Color(0xFFF2C14E))
-            var sel by remember { mutableStateOf<Int?>(null) }
-            SIGN_NAMES.withIndex().toList().chunked(3).forEach { row ->
-                Row { row.forEach { (i, n) -> TextButton(onClick = { sel = i }) { Text((if (sel == i) "• " else "") + n) } } }
+            Text("Rashifal / राशिफल: your own rashi", style = MaterialTheme.typography.titleSmall, color = Color(0xFFF2C14E))
+            val ctx = androidx.compose.ui.platform.LocalContext.current
+            val own by androidx.compose.runtime.produceState<OwnRashi.State>(OwnRashi.State.Loading, ctx) {
+                value = withContext(Dispatchers.Default) { OwnRashi.compute(TrikaalProfiles.read(ctx), TrikaalProfiles.defaultKey(ctx)) }
             }
-            val s0 = sel
             val sky = (moon as? Computation.Available)?.value
-            if (s0 != null && sky != null) {
-                var good = 0; var counted = 0
-                val lines = Rashifal.FAVOURABLE_FROM_MOON.mapNotNull { (g, houses) ->
-                    val t = sky.firstOrNull { it.graha == g } ?: return@mapNotNull null
-                    val house = (t.rashi - s0 + 12) % 12 + 1
-                    counted++
-                    val ok = house in houses
-                    if (ok) good++
-                    "${g.label} in ${SIGN_NAMES[t.rashi]}, house $house from ${SIGN_NAMES[s0]}: " + (if (ok) "favourable" else "not favourable")
+            when (val o = own) {
+                is OwnRashi.State.Loading -> Text("Calculating on this phone...")
+                is OwnRashi.State.Unavailable -> Text(o.reason, style = MaterialTheme.typography.bodySmall)
+                is OwnRashi.State.Ready -> {
+                    val s0 = o.rashi
+                    Text("Your Moon sign: ${SIGN_NAMES[s0]}" + (if (o.profileName.isNotBlank()) " (${o.profileName})" else ""))
+                    if (sky == null) Text("Unavailable: planet positions not calculated.")
+                    else {
+                        var good = 0; var counted = 0
+                        val lines = Rashifal.FAVOURABLE_FROM_MOON.mapNotNull { (g, houses) ->
+                            val t = sky.firstOrNull { it.graha == g } ?: return@mapNotNull null
+                            val house = (t.rashi - s0 + 12) % 12 + 1
+                            counted++
+                            val ok = house in houses
+                            if (ok) good++
+                            "${g.label} in ${SIGN_NAMES[t.rashi]}, house $house from ${SIGN_NAMES[s0]}: " + (if (ok) "favourable" else "not favourable")
+                        }
+                        Text("$good of $counted planets are favourable from ${SIGN_NAMES[s0]} today (gochara rule, from your Moon sign).")
+                        lines.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                        Text("Based on your saved birth details, on this phone only. Vedic reading, not certainty.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
-                Text("$good of $counted planets are favourable from ${SIGN_NAMES[s0]} today (gochara rule, from the Moon sign).")
-                lines.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
-                Text("Sign-based only. Enter birth details below for the full reading with Tarabala and dasha. Vedic reading, not certainty.", style = MaterialTheme.typography.bodySmall)
-            } else if (s0 != null) Text("Unavailable: planet positions not calculated.")
+            }
             }
             if (mode == 0) Text("Enter your birth details below to see your own kundli.", style = MaterialTheme.typography.bodySmall)
         }
