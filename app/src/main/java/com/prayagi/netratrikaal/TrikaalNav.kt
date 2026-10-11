@@ -22,14 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.prayagi.trikaal.AstroCore
-import com.prayagi.trikaal.Computation
-import com.prayagi.trikaal.Graha
-import com.prayagi.trikaal.NAKSHATRA_NAMES
-import com.prayagi.trikaal.PanchangPlace
-import com.prayagi.trikaal.Panchang
-import com.prayagi.trikaal.Position
-import com.prayagi.trikaal.VedicDay
+import com.prayagi.trikaal.*
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
