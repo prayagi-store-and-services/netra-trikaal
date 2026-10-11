@@ -69,10 +69,11 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                 Column(Modifier.safeDrawingPadding().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
                     TrikaalTicker(place)
                     var hasKundli by remember { mutableStateOf(false) }
+                    var navTab by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
-                        if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it }) else {
+                        if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it },navTab) else {
                         TrikaalLocationChoice(place) { place = it }
                         if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
                         TrikaalContent { hasKundli = it }
@@ -82,6 +83,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                     }
                     if(hasKundli) androidx.compose.foundation.layout.Box(Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(4.dp)) { KundliPdfSoon() }
                     }
+                    if(RedesignGate.isOn()) TrikaalBottomBar(navTab) { navTab = it }
                 }
             }
         }
