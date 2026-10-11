@@ -64,7 +64,7 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
             if (mode != 1) {
             Text("Rashifal / राशिफल: tap your Moon sign (rashi)", style = MaterialTheme.typography.titleSmall, color = Color(0xFFF2C14E))
             var sel by remember { mutableStateOf<Int?>(null) }
-            SIGN_NAMES.withIndex().toList().chunked(4).forEach { row ->
+            SIGN_NAMES.withIndex().toList().chunked(3).forEach { row ->
                 Row { row.forEach { (i, n) -> TextButton(onClick = { sel = i }) { Text((if (sel == i) "• " else "") + n) } } }
             }
             val s0 = sel
