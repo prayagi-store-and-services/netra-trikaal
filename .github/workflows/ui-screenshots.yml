@@ -268,6 +268,17 @@ jobs:
                   if tap_exact(label):
                       time.sleep(3)
                       shot("nav-" + label.lower())
+              # small phones: 360 dp and 320 dp wide
+              for wpx, tag in [(720, "360dp"), (640, "320dp")]:
+                  sh("shell", "wm", "size", "%dx%d" % (wpx, wpx * 2))
+                  sh("shell", "wm", "density", "320")
+                  time.sleep(4)
+                  for label in ["Kundli", "Horoscope", "Panchang", "Other", "Settings"]:
+                      if tap_exact(label):
+                          time.sleep(2)
+                          shot("small-" + tag + "-" + label.lower())
+              sh("shell", "wm", "size", "reset")
+              sh("shell", "wm", "density", "reset")
           print("done")
           PY
           python3 drive.py
