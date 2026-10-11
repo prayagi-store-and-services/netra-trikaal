@@ -1,4 +1,5 @@
 name: UI screenshots (manual check)
+# small-screen check at 360dp and 320dp (v1.0.9)
 
 on:
   pull_request:
