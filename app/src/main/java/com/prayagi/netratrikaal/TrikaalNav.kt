@@ -1,5 +1,7 @@
 package com.prayagi.netratrikaal
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,14 +38,19 @@ val TRIKAAL_TABS = listOf("Kundli" to "\u2726", "Horoscope" to "\u2609", "Match"
 private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
 @Composable fun TrikaalBottomBar(selected: Int, onSelect: (Int) -> Unit) {
-    NavigationBar(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC)) {
+    androidx.compose.foundation.layout.Row(
+        Modifier.fillMaxWidth().background(Palette.night2).padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
         TRIKAAL_TABS.forEachIndexed { i, (label, icon) ->
-            NavigationBarItem(
-                selected = selected == i,
-                onClick = { onSelect(i) },
-                icon = { Text(icon, color = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)) },
-                label = { Text(label, maxLines = 1, softWrap = false, fontSize = 9.sp, style = MaterialTheme.typography.labelSmall, color = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)) }
-            )
+            val c = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)
+            Column(
+                Modifier.weight(1f).clickable { onSelect(i) },
+                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            ) {
+                Text(icon, color = c)
+                Text(label, color = c, fontSize = 9.sp, maxLines = 1, softWrap = false, textAlign = TextAlign.Center, fontWeight = if (selected == i) androidx.compose.ui.text.font.FontWeight.Bold else null)
+            }
         }
     }
 }
