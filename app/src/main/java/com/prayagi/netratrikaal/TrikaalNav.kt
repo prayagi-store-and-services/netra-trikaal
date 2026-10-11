@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.prayagi.trikaal.*
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -41,7 +42,7 @@ private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
                 selected = selected == i,
                 onClick = { onSelect(i) },
                 icon = { Text(icon, color = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)) },
-                label = { Text(label, maxLines = 1, style = MaterialTheme.typography.labelSmall, color = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)) }
+                label = { Text(label, maxLines = 1, softWrap = false, fontSize = 9.sp, style = MaterialTheme.typography.labelSmall, color = if (selected == i) Color(0xFFF2C14E) else Color(0xFFFFF4DC)) }
             )
         }
     }
