@@ -13,11 +13,12 @@ object RedesignGate {
 /** One palette for the whole app. Old: deep indigo. New: purple. */
 object Palette {
     private val on get() = RedesignGate.isOn()
-    val night: Color get() = if (on) Color(0xFF160B33) else Color(0xFF0A0E2A)
-    val night2: Color get() = if (on) Color(0xFF2B1A58) else Color(0xFF1B2150)
-    val nightHigh: Color get() = if (on) Color(0xFF3B2578) else Color(0xFF262D66)
-    val skyTop: Color get() = if (on) Color(0xFF0E0724) else Color(0xFF070A22)
-    val skyMid: Color get() = if (on) Color(0xFF241256) else Color(0xFF151245)
-    val skyLow: Color get() = if (on) Color(0xFF3F1F73) else Color(0xFF2A1A52)
-    val outlineVariant: Color get() = if (on) Color(0xFF7A5FB8) else Color(0xFF5A5F99)
+    private val fest get() = com.prayagi.netratrikaal.festival.JayMataDi.inWindow()
+    val night: Color get() = if (fest) Color(0xFF1C0A0A) else if (on) Color(0xFF160B33) else Color(0xFF0A0E2A)
+    val night2: Color get() = if (fest) Color(0xFF3A1410) else if (on) Color(0xFF2B1A58) else Color(0xFF1B2150)
+    val nightHigh: Color get() = if (fest) Color(0xFF55201A) else if (on) Color(0xFF3B2578) else Color(0xFF262D66)
+    val skyTop: Color get() = if (fest) Color(0xFF120505) else if (on) Color(0xFF0E0724) else Color(0xFF070A22)
+    val skyMid: Color get() = if (fest) Color(0xFF4A1A10) else if (on) Color(0xFF241256) else Color(0xFF151245)
+    val skyLow: Color get() = if (fest) Color(0xFF8A3A12) else if (on) Color(0xFF3F1F73) else Color(0xFF2A1A52)
+    val outlineVariant: Color get() = if (fest) Color(0xFFE0A030) else if (on) Color(0xFF7A5FB8) else Color(0xFF5A5F99)
 }
