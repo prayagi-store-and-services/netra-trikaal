@@ -31,7 +31,8 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
  * First-screen card for people with no saved profile, so the first screen is never just an empty form.
  * Everything is calculated on the phone for the chosen place (Prayagraj if no location was shared). Nothing is sent anywhere.
  */
-@Composable fun TrikaalToday(place: PanchangPlace) {
+/** mode 0 = panchang + rashifal, 1 = panchang only, 2 = rashifal only. */
+@Composable fun TrikaalToday(place: PanchangPlace, mode: Int = 0) {
     var day by remember { mutableStateOf<Computation<VedicDay>?>(null) }
     var moon by remember { mutableStateOf<Computation<List<Position>>?>(null) }
     LaunchedEffect(place) {
@@ -42,8 +43,8 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
     }
     Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
         Column(Modifier.padding(16.dp)) {
-            Text("Today / आज · ${place.label}", style = MaterialTheme.typography.titleMedium, color = Color(0xFFF2C14E))
-            when (val d = day) {
+            Text((if (mode == 2) "Rashifal / राशिफल · " else "Today / आज · ") + place.label, style = MaterialTheme.typography.titleMedium, color = Color(0xFFF2C14E))
+            if (mode != 2) when (val d = day) {
                 null -> Text("Calculating on this phone...")
                 is Computation.Unavailable -> Text("Unavailable: ${d.reason}")
                 is Computation.Available -> {
@@ -60,9 +61,10 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
                     Text("Sunrise ${TodayHm.format(v.sunrise.atZone(place.zone))} · Sunset ${TodayHm.format(v.sunset.atZone(place.zone))}", style = MaterialTheme.typography.bodySmall)
                 }
             }
+            if (mode != 1) {
             Text("Rashifal / राशिफल: tap your Moon sign (rashi)", style = MaterialTheme.typography.titleSmall, color = Color(0xFFF2C14E))
             var sel by remember { mutableStateOf<Int?>(null) }
-            SIGN_NAMES.withIndex().toList().chunked(4).forEach { row ->
+            SIGN_NAMES.withIndex().toList().chunked(3).forEach { row ->
                 Row { row.forEach { (i, n) -> TextButton(onClick = { sel = i }) { Text((if (sel == i) "• " else "") + n) } } }
             }
             val s0 = sel
@@ -81,7 +83,8 @@ private val TodayHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
                 lines.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                 Text("Sign-based only. Enter birth details below for the full reading with Tarabala and dasha. Vedic reading, not certainty.", style = MaterialTheme.typography.bodySmall)
             } else if (s0 != null) Text("Unavailable: planet positions not calculated.")
-            Text("Enter your birth details below to see your own kundli.", style = MaterialTheme.typography.bodySmall)
+            }
+            if (mode == 0) Text("Enter your birth details below to see your own kundli.", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

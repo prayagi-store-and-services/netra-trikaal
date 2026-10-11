@@ -80,7 +80,7 @@ fun requestFreshFix(c: Context, done: (Pair<Double, Double>?) -> Unit) {
             Text("Place for timings: ${place.label}", style = MaterialTheme.typography.titleSmall)
             if (choice == "unset") {
                 Text("Rahu Kaal, muhurat and tithi change with place. Use your approximate location? It stays on this phone and is never sent anywhere. If you say no, Prayagraj is used.", style = MaterialTheme.typography.bodySmall)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = { ask() }) { Text("Yes, use my location") }
                     OutlinedButton(onClick = { TrikaalPlaces.setChoice(ctx, "no"); choice = "no"; onPlace(PRAYAGRAJ) }) { Text("No, use Prayagraj") }
                 }
