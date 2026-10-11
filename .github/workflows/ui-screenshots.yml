@@ -259,6 +259,15 @@ jobs:
               shot("coming-soon-expanded")
               tap("Download PDF")
               shot("kundli-pdf-button-tapped")
+              # bottom navigation check (v1.0.8+): scroll to top, then tap each tab
+              for _i in range(14):
+                  sh("shell", "input", "swipe", "540", "700", "540", "1900", "300")
+              time.sleep(1)
+              shot("nav-kundli-top-insights")
+              for label in ["Horoscope", "Match", "Panchang", "Other", "Settings", "Kundli"]:
+                  if tap_exact(label):
+                      time.sleep(3)
+                      shot("nav-" + label.lower())
           print("done")
           PY
           python3 drive.py
