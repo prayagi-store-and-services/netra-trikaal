@@ -19,9 +19,9 @@ fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         when (tab) {
             0 -> { TrikaalInsights(place); TrikaalContent(onKundli) }
-            1 -> { TrikaalToday(place) }
+            1 -> { TrikaalToday(place, 2) }
             2 -> { Text("Match Making: Unavailable. This is not built yet and no result is shown.", style = MaterialTheme.typography.bodyMedium) }
-            3 -> { TrikaalTicker(place); TrikaalToday(place) }
+            3 -> { TrikaalTicker(place); TrikaalToday(place, 1) }
             4 -> { TrikaalSoon() }
             else -> { TrikaalLocationChoice(place, onPlace) }
         }
