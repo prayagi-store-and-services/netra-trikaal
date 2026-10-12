@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Optional, asked with a clear yes or no. Used only on the phone; Prayagraj is used if declined. No INTERNET permission: the app makes no network calls. -->
+    <!-- Optional, asked with a clear yes or no. Used only on the phone; Prayagraj is used if declined. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Only for the optional "Check for update" button in Settings. It reads the latest version from GitHub when tapped; no personal data is sent and nothing runs in the background. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Lets the update button hand the downloaded, checksum-verified file to the Android installer. Android still asks you to confirm. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="false"
@@ -20,5 +24,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name="com.prayagi.netratrikaal.update.UpdateFileProvider"
+            android:authorities="${applicationId}.updates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
     </application>
 </manifest>
