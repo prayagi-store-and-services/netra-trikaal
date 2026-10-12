@@ -23,7 +23,7 @@ fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli
             2 -> { Text("Match Making: Unavailable. This is not built yet and no result is shown.", style = MaterialTheme.typography.bodyMedium) }
             3 -> { TrikaalTicker(place); TrikaalToday(place, 1) }
             4 -> { TrikaalSoon() }
-            else -> { TrikaalLocationChoice(place, onPlace) }
+            else -> { TrikaalLocationChoice(place, onPlace); com.prayagi.netratrikaal.update.UpdateCheckCard() }
         }
     }
 }
