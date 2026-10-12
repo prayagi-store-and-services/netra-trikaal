@@ -77,11 +77,8 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                         TrikaalLocationChoice(place) { place = it }
                         if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
                         TrikaalContent { hasKundli = it }
-                        TrikaalSoon()
                         }
-                        if(hasKundli) androidx.compose.foundation.layout.Spacer(Modifier.height(80.dp))
                     }
-                    if(hasKundli) androidx.compose.foundation.layout.Box(Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(4.dp)) { KundliPdfSoon() }
                     }
                     if(RedesignGate.isOn()) TrikaalBottomBar(navTab) { navTab = it }
                 }
