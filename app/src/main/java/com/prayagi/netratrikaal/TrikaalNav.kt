@@ -32,8 +32,8 @@ import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** Bottom navigation tabs (new design). Labels only describe screens that exist; unbuilt ones say so inside the screen. */
-val TRIKAAL_TABS = listOf("Kundli" to "\u2726", "Horoscope" to "\u2609", "Match" to "\u2665", "Panchang" to "\u25F7", "Other" to "\u25A6", "Settings" to "\u2699")
+/** Bottom navigation tabs (new design). Only screens that have real content get a tab. Unbuilt ones (match making, planned features) are hidden until they work. */
+val TRIKAAL_TABS = listOf("Kundli" to "\u2726", "Horoscope" to "\u2609", "Panchang" to "\u25F7", "Settings" to "\u2699")
 
 private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
