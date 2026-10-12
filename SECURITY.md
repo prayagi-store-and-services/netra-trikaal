@@ -2,6 +2,10 @@
 
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
+## Empty tabs and a not-built button removed (v1.0.12)
+
+The Match tab (said it was not built), the Other tab (a list of planned features) and the floating "PDF soon" button on the kundli view had no working content. They are hidden until they work. The remaining tabs are Kundli, Horoscope, Panchang and Settings. No calculation changed. No new permission, library or network address.
+
 ## Region guard (v1.0.4)
 
 The app refuses to open when the phone's SIM or network country is on a built-in block list (PK, BD, AF, CN, KP). The check runs only on the phone, uses no permission, no network call and no IP lookup, and nothing is stored or sent. With no signal, or an Indian SIM, it never blocks. It is a deterrent, not foolproof: removing the SIM or changing the language region bypasses it.
