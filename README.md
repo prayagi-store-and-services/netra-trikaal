@@ -18,7 +18,7 @@ Planned features (Match Making, Kundli PDF, tithi food guide, face and palm read
 
 ## Principles
 
-- On-device only: no account, no server. INTERNET is used only when you tap "Check for update" in Settings (reads the latest version from GitHub; no personal data sent, nothing in the background).
+- On-device only: no account, no server. INTERNET is used to read the latest version from GitHub (when you tap "Check for update", and about every 6 hours in the background) and to save a new version so installing is one tap; no personal data sent.
 - Truthful data: missing means "Unavailable". Nothing is invented. Sources are cited.
 - Readings follow Vedic principles, not scientific certainty. Not medical, legal or financial advice.
 
