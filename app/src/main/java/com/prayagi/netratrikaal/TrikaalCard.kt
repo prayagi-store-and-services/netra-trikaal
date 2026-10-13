@@ -46,7 +46,7 @@ private val Cream=Color(0xFFFFF4DC)
             drawCircle(if(r.nextInt(5)==0) Gold.copy(alpha=a) else Color.White.copy(alpha=a),rad,Offset(x,y))
             if(big){val l=rad*3.2f;drawLine(Color.White.copy(alpha=0.55f),Offset(x-l,y),Offset(x+l,y),density*0.8f);drawLine(Color.White.copy(alpha=0.55f),Offset(x,y-l),Offset(x,y+l),density*0.8f)}
         }
-        val cx=size.width*0.86f;val cy=size.height*0.07f;val mr=22f*density
+        val cx=size.width*0.86f;val cy=size.height*0.17f;val mr=22f*density
         drawCircle(Gold.copy(alpha=0.18f),mr*1.9f,Offset(cx,cy))
         drawCircle(Color(0xFFFFE9A8),mr,Offset(cx,cy))
         drawCircle(Palette.skyMid,mr*0.88f,Offset(cx+mr*0.45f,cy-mr*0.1f))
