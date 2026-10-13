@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         }
         com.prayagi.netratrikaal.festival.JayMataDi.greetIfDue(this)
         setContent {
-            MaterialTheme { Surface(Modifier.fillMaxSize()) { TrikaalCard(initiallyOpen = true) } }
+            MaterialTheme { Surface(Modifier.fillMaxSize()) { TrikaalCard(initiallyOpen = true); com.prayagi.netratrikaal.update.LaunchUpdatePrompt() } }
         }
     }
 }
