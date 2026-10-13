@@ -139,8 +139,10 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
         }
     } }
     chart?.let { c ->
+        var topic by remember { mutableStateOf(0) }
+        var vedic by remember { mutableStateOf(false) }
+        var d9 by remember { mutableStateOf(false) }
         HorizontalDivider()
-        Row { listOf("Quick","Detailed","Technical").forEach{v->TextButton(onClick={view=v}){Text(if(v==view)"• $v" else v)}} }
         Text("Kundli / कुंडली",style=MaterialTheme.typography.titleLarge)
         if(c.input.placeLabel?.isNotBlank()==true) Text("Place at birth / जन्म स्थान: ${c.input.placeLabel}",style=MaterialTheme.typography.bodyMedium)
         run {
@@ -162,8 +164,13 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
             val cur=currentPeriod(spokenPeriods,asOf ?: Instant.now())
             ListenButton(listenSummary(SIGN_NAMES[c.lagnaRashi],SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi],cur?.let{"${it.first.lord.label} and ${it.second?.lord?.label ?: "Unavailable"}"}))
         }
-        Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text(if(v==layout)"• $v chart" else "$v chart")}} }
-        KundliDrawing(c,layout)
+        Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text(if(v==layout)"• $v chart" else "$v chart")}}; TextButton(onClick={d9=false}){Text(if(!d9)"• D-1" else "D-1")}; TextButton(onClick={d9=true}){Text(if(d9)"• D-9" else "D-9")} }
+        if(d9) Text("नवांश (D-9): हर राशि को नौ भागों में बाँटकर बनी कुंडली। परंपरा में इसे रिश्तों की गहराई देखने में सहायक माना जाता है।",style=MaterialTheme.typography.bodySmall)
+        KundliDrawing(if(d9) navamshaChart(c) else c,layout)
+        KundliTopicsPanel(c,asOf ?: Instant.now(),topic,{topic=it},vedic,{vedic=it})
+        if(topic==6) {
+        Row { listOf("Quick","Detailed","Technical").forEach{v->TextButton(onClick={view=v}){Text(if(v==view)"• $v" else v)}} }
+
         c.positions.forEach { p ->
             Text("${p.graha.label}: ${SIGN_NAMES[p.rashi]} ${deg(p.degreeInSign)}${if(p.retrograde)" R" else ""}")
             if(view!="Quick") Text("${NAKSHATRA_NAMES[p.nakshatra]} · pada ${p.pada} · house ${c.houseOf(p)}",style=MaterialTheme.typography.bodySmall)
@@ -196,6 +203,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                 is Computation.Unavailable -> Text("Unavailable: ${r.reason}")
             }
             else -> Text("Unavailable: refresh Gochar to calculate today's rashifal")
+        }
         }
     }
     HorizontalDivider()
