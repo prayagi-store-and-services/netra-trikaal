@@ -68,11 +68,15 @@ private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 @Composable fun TrikaalInsights(place: PanchangPlace) {
     var day by remember { mutableStateOf<Computation<VedicDay>?>(null) }
     var sky by remember { mutableStateOf<Computation<List<Position>>?>(null) }
+    var yoga by remember { mutableStateOf<Panchang.NamedSpan?>(null) }
+    var karana by remember { mutableStateOf<Panchang.NamedSpan?>(null) }
     LaunchedEffect(place) {
         day = null
         val now = Instant.now()
         day = withContext(Dispatchers.Default) { Panchang.day(now, place) }
         sky = withContext(Dispatchers.Default) { AstroCore.currentPositions(now) }
+        yoga = withContext(Dispatchers.Default) { Panchang.yogaAt(now) }
+        karana = withContext(Dispatchers.Default) { Panchang.karanaAt(now) }
     }
     val now = Instant.now()
     val v = (day as? Computation.Available)?.value
@@ -91,7 +95,29 @@ private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
                 InsightTile("Rahu Kaal", span("Rahu Kaal"), Modifier.weight(1f))
                 InsightTile("Abhijit", span("Abhijit"), Modifier.weight(1f))
             }
+            fun until(n: Panchang.NamedSpan?): String = n?.let { it.name + " (till " + InsightHm.format(it.end.atZone(place.zone)) + ")" } ?: "Unavailable"
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                InsightTile("Yoga", until(yoga), Modifier.weight(1f))
+                InsightTile("Karana", until(karana), Modifier.weight(1f))
+            }
             if (day == null) Text("Calculating on this phone...", style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/** Home "Explore" tiles. Only sections that work today get a tile; the rest appear when they are built. */
+@Composable fun TrikaalExplore(onTab: (Int) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Explore Netra Trikaal", style = MaterialTheme.typography.titleMedium, color = Color(0xFFF2C14E))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf(1, 2).forEach { i ->
+                val (label, icon) = TRIKAAL_TABS[i]
+                Card(Modifier.weight(1f).clickable { onTab(i) }, shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Palette.nightHigh, contentColor = Color(0xFFFFF4DC))) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        Text(icon, color = Color(0xFFF2C14E)); Text(label, maxLines = 1, softWrap = false)
+                    }
+                }
+            }
         }
     }
 }
