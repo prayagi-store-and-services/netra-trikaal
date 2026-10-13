@@ -7,7 +7,7 @@ import java.time.Instant
 object TrikaalIngress {
     data class Change(val graha: Graha, val from: Int, val to: Int, val at: Instant)
 
-    private fun rashiOf(g: Graha, t: Instant): Int? =
+    internal fun rashiOf(g: Graha, t: Instant): Int? =
         (AstroCore.currentPositions(t) as? Computation.Available)?.value?.firstOrNull { it.graha == g }?.rashi
 
     fun next(g: Graha, from: Instant, horizonDays: Int = 400): Change? {
