@@ -22,6 +22,7 @@ fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli
             1 -> { TrikaalHoroscope() }
             2 -> { TrikaalTicker(place); TrikaalPanchangDay(place) }
             3 -> { TrikaalTritiya(place) }
+            4 -> { TrikaalOther() }
             else -> { TrikaalLocationChoice(place, onPlace); com.prayagi.netratrikaal.update.UpdateCheckCard() }
         }
     }
