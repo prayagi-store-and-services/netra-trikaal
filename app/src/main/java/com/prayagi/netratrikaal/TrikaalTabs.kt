@@ -14,11 +14,11 @@ import com.prayagi.trikaal.PanchangPlace
  * It reuses the existing screens; nothing is calculated differently.
  */
 @Composable
-fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli: (Boolean) -> Unit, tab: Int) {
+fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli: (Boolean) -> Unit, tab: Int, onTab: (Int) -> Unit = {}) {
     androidx.compose.runtime.LaunchedEffect(tab) { if (tab != 0) onKundli(false) }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         when (tab) {
-            0 -> { TrikaalInsights(place); TrikaalContent(onKundli) }
+            0 -> { TrikaalInsights(place); TrikaalExplore(onTab); TrikaalContent(onKundli) }
             1 -> { TrikaalHoroscope() }
             2 -> { TrikaalTicker(place); TrikaalToday(place, 1) }
             else -> { TrikaalLocationChoice(place, onPlace); com.prayagi.netratrikaal.update.UpdateCheckCard() }
