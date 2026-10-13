@@ -121,7 +121,11 @@ object AppUpdater {
      * removes the downloaded installer file and nothing is left in storage.
      */
     fun cleanLeftovers(context: Context) {
-        try { cleanDir(File(context.cacheDir, "updates")) } catch (_: Exception) {}
+        try {
+            val installed = installedVersionName(context)
+            val now = System.currentTimeMillis()
+            File(context.cacheDir, "updates").listFiles()?.forEach { if (!PreDownload.keepFile(it.name, installed, now - it.lastModified())) it.delete() }
+        } catch (_: Exception) {}
     }
 
     /** Called when the app comes back to the front. Removes installer files older than one hour (cancelled or finished installs). */
