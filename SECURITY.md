@@ -19,7 +19,7 @@ When no profile is saved, the first screen now shows a Today card (tithi, Moon n
 - All calculation runs on the phone with the Swiss Ephemeris (Moshier mode, AGPL, source in `astro-core`).
 - Birth name, date, time, place and up to 5 saved profiles stay in the app's private storage. Nothing is sent anywhere.
 - One optional permission: approximate location (ACCESS_COARSE_LOCATION), asked with a clear yes or no. It is used on the phone to work out Rahu Kaal, muhurat and tithi for your place and is never sent. If declined, Prayagraj is used.
-- INTERNET is declared only for the optional "Check for update" button in Settings. It contacts GitHub when tapped, to read the latest version and download the verified update; no personal data or birth details are sent, nothing runs in the background. No account. No analytics.
+- INTERNET is declared only for the update check. It contacts GitHub when you tap "Check for update" and about every 6 hours in the background (WorkManager, online only) to read the latest version and save the verified update, so installing is one tap; Wi-Fi any size, mobile data only up to 100 MB, never roaming, never with Data Saver on or a low battery. One notification says the version is downloaded (POST_NOTIFICATIONS, asked once, optional). No personal data or birth details are sent. No account. No analytics.
 - City search uses an offline GeoNames file (CC BY 4.0) shipped in the app.
 - Values with no vetted rule show "Unavailable". Results are not checked against professional software for every case, and the app says so.
 
