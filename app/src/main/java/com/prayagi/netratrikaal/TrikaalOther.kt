@@ -51,4 +51,12 @@ import java.time.LocalDate
             Text("This is a traditional reference list only. It does not say which stone suits you, and it is not advice to buy anything.", style = MaterialTheme.typography.bodySmall)
         }
     }
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Vastu / वास्तु", style = MaterialTheme.typography.titleMedium, color = gold)
+            Text("The directions, their guardian and their element as commonly taught in Vastu Shastra.", style = MaterialTheme.typography.bodySmall)
+            Vastu.TABLE.forEach { Text("${it.name} / ${it.nameHi}: ${it.deity}, ${it.element}") }
+            Text("A traditional reference only. Books differ on some details. It is not a building, safety or legal check.", style = MaterialTheme.typography.bodySmall)
+        }
+    }
 }
