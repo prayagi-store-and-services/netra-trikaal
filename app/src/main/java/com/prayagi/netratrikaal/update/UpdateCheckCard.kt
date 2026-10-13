@@ -39,7 +39,7 @@ fun UpdateCheckCard(modifier: Modifier = Modifier) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("App version", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text("Checking contacts GitHub only, to read the latest version number. No personal data or birth details are sent, and nothing is checked in the background. It runs only when you tap the button.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Checking contacts GitHub only, to read the latest version number. No personal data or birth details are sent. It is checked when you open the app and when you tap the button; nothing runs in the background.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Installed: " + AppUpdater.installedVersionName(context), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedButton(enabled = !busy, onClick = {
                 scope.launch {
