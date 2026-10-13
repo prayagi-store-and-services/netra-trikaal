@@ -68,15 +68,18 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
             Surface(Modifier.fillMaxSize(),color=Night) {
                 StarrySky(Modifier.fillMaxSize())
                 Column(Modifier.safeDrawingPadding().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-                    // Standard Netra header: 56 dp, only app name, version and date/time. Everything else scrolls.
+                    // Standard Netra header (owner, 3 Oct): app name, date DD MM YYYY, running clock to the millisecond, and the place coordinates. Only the body below scrolls.
                     run {
                         var clockNow by remember { mutableStateOf(java.util.Date()) }
-                        LaunchedEffect(Unit) { while (true) { clockNow = java.util.Date(); kotlinx.coroutines.delay(30_000) } }
+                        LaunchedEffect(Unit) { while (true) { clockNow = java.util.Date(); kotlinx.coroutines.delay(50) } }
                         val ownVersion = remember { try { placeCtx.packageManager.getPackageInfo(placeCtx.packageName, 0).versionName } catch (e: Exception) { null } ?: "Unavailable" }
-                        Row(Modifier.fillMaxWidth().height(56.dp),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween) {
-                            Column { Text("Netra Trikaal",style=MaterialTheme.typography.titleLarge,color=Gold,maxLines=1);Text("v"+ownVersion,fontSize=12.sp,maxLines=1) }
-                            Text(java.text.SimpleDateFormat("EEE d MMM, HH:mm",java.util.Locale.getDefault()).format(clockNow),fontSize=12.sp,maxLines=1)
-                            TextButton(onClick={open=false}){Text("Close / बंद",maxLines=1)}
+                        Column(Modifier.fillMaxWidth()) {
+                            Row(Modifier.fillMaxWidth().height(48.dp),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween) {
+                                Column(Modifier.weight(1f)) { Text("Netra Trikaal",style=MaterialTheme.typography.titleLarge,color=Gold,maxLines=1);Text("v"+ownVersion,fontSize=12.sp,maxLines=1) }
+                                TextButton(onClick={open=false}){Text("Close / बंद",maxLines=1)}
+                            }
+                            Text(java.text.SimpleDateFormat("dd MM yyyy  HH:mm:ss.SSS",java.util.Locale.ROOT).format(clockNow),fontSize=13.sp,maxLines=1,softWrap=false,fontFamily=androidx.compose.ui.text.font.FontFamily.Monospace)
+                            Text(place.label+"  "+String.format(java.util.Locale.ROOT,"%.4f, %.4f",place.lat,place.lon),fontSize=12.sp,maxLines=1,softWrap=false)
                         }
                     }
                     TrikaalTicker(place)
@@ -84,7 +87,7 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                     var navTab by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-                        if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it },navTab) else {
+                        if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it },navTab,{ navTab = it }) else {
                         TrikaalLocationChoice(place) { place = it }
                         if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
                         TrikaalContent { hasKundli = it }
