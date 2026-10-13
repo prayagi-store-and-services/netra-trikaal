@@ -5,8 +5,9 @@ import java.time.Instant
 
 /**
  * Choghadiya: the daytime and the night are each split into 8 equal parts. The names follow a fixed cycle
- * (Udveg, Chal, Labh, Amrit, Kaal, Shubh, Rog). The first day part is the weekday lord's own name, and the first night part
- * starts five names later in the same cycle. This is a traditional muhurat method, not a prediction.
+ * The day names follow the cycle Udveg, Chal, Labh, Amrit, Kaal, Shubh, Rog and the night names follow the cycle
+ * Shubh, Amrit, Chal, Rog, Kaal, Labh, Udveg. Each starts at a fixed name for the weekday (the published tables).
+ * This is a traditional muhurat method, not a prediction.
  */
 object Choghadiya {
     enum class Quality { GOOD, NEUTRAL, AVOID }
@@ -14,6 +15,16 @@ object Choghadiya {
         val quality: Quality get() = when (name) { "Amrit", "Shubh", "Labh" -> Quality.GOOD; "Chal" -> Quality.NEUTRAL; else -> Quality.AVOID }
     }
     private val CYCLE = listOf("Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog")
+    private val NIGHT_CYCLE = listOf("Shubh", "Amrit", "Chal", "Rog", "Kaal", "Labh", "Udveg")
+    private fun nightStart(w: DayOfWeek): Int = when (w) {
+        DayOfWeek.SUNDAY -> 0      // Shubh
+        DayOfWeek.MONDAY -> 2      // Chal
+        DayOfWeek.TUESDAY -> 4     // Kaal
+        DayOfWeek.WEDNESDAY -> 6   // Udveg
+        DayOfWeek.THURSDAY -> 1    // Amrit
+        DayOfWeek.FRIDAY -> 3      // Rog
+        DayOfWeek.SATURDAY -> 5    // Labh
+    }
     private fun dayStart(w: DayOfWeek): Int = when (w) {
         DayOfWeek.SUNDAY -> 0      // Udveg
         DayOfWeek.MONDAY -> 3      // Amrit
@@ -25,8 +36,9 @@ object Choghadiya {
     }
 
     fun names(weekday: DayOfWeek, night: Boolean): List<String> {
-        val s = (dayStart(weekday) + if (night) 5 else 0) % 7
-        return List(8) { CYCLE[(s + it) % 7] }
+        val cycle = if (night) NIGHT_CYCLE else CYCLE
+        val s = if (night) nightStart(weekday) else dayStart(weekday)
+        return List(8) { cycle[(s + it) % 7] }
     }
 
     /** 16 parts: 8 from sunrise to sunset, then 8 from sunset to the next sunrise. */
