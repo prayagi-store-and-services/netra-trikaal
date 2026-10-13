@@ -11,8 +11,8 @@ android {
     applicationId = "com.prayagi.netratrikaal"
     minSdk = 26
     targetSdk = 36
-    versionCode = 17
-    versionName = "1.0.16"
+    versionCode = 18
+    versionName = "1.0.17"
   }
 
   signingConfigs {
@@ -52,5 +52,6 @@ dependencies {
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.work.runtime.ktx)
   testImplementation(libs.junit)
 }
