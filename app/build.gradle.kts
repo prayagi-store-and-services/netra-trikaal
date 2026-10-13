@@ -11,8 +11,8 @@ android {
     applicationId = "com.prayagi.netratrikaal"
     minSdk = 26
     targetSdk = 36
-    versionCode = 18
-    versionName = "1.0.17"
+    versionCode = 19
+    versionName = "1.0.18"
   }
 
   signingConfigs {
