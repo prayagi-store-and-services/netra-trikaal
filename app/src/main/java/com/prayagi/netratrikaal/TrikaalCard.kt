@@ -19,6 +19,7 @@ import kotlin.random.Random
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.prayagi.trikaal.*
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -67,12 +68,22 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
             Surface(Modifier.fillMaxSize(),color=Night) {
                 StarrySky(Modifier.fillMaxSize())
                 Column(Modifier.safeDrawingPadding().padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+                    // Standard Netra header: 56 dp, only app name, version and date/time. Everything else scrolls.
+                    run {
+                        var clockNow by remember { mutableStateOf(java.util.Date()) }
+                        LaunchedEffect(Unit) { while (true) { clockNow = java.util.Date(); kotlinx.coroutines.delay(30_000) } }
+                        val ownVersion = remember { try { placeCtx.packageManager.getPackageInfo(placeCtx.packageName, 0).versionName } catch (e: Exception) { null } ?: "Unavailable" }
+                        Row(Modifier.fillMaxWidth().height(56.dp),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween) {
+                            Column { Text("Netra Trikaal",style=MaterialTheme.typography.titleLarge,color=Gold,maxLines=1);Text("v"+ownVersion,fontSize=12.sp,maxLines=1) }
+                            Text(java.text.SimpleDateFormat("EEE d MMM, HH:mm",java.util.Locale.getDefault()).format(clockNow),fontSize=12.sp,maxLines=1)
+                            TextButton(onClick={open=false}){Text("Close / बंद",maxLines=1)}
+                        }
+                    }
                     TrikaalTicker(place)
                     var hasKundli by remember { mutableStateOf(false) }
                     var navTab by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { Text("✦ NETRA TRIKAAL ✦",style=MaterialTheme.typography.titleLarge,color=Gold);TextButton(onClick={open=false}){Text("Close / बंद")}}
                         if(RedesignGate.isOn()) TrikaalTabs(place,{ place = it },{ hasKundli = it },navTab) else {
                         TrikaalLocationChoice(place) { place = it }
                         if(remember { TrikaalProfiles.read(placeCtx).isEmpty() }) TrikaalToday(place)
