@@ -112,10 +112,12 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
     var defaultKey by remember { mutableStateOf(TrikaalProfiles.defaultKey(context)) }
     var transits by remember { mutableStateOf<Computation<List<Transit>>?>(null) }
     var asOf by remember { mutableStateOf<Instant?>(null) }
-    Text("Birth details / जन्म विवरण",style=MaterialTheme.typography.titleMedium)
-    Text("Name, date, time and place are all you need to fill in. Nothing is guessed or sent to a server.",style=MaterialTheme.typography.bodySmall)
+    var sub by remember { mutableStateOf(0) }
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) { listOf("Birth Details","Chart","Analysis","Report").forEachIndexed{k,n->TextButton(onClick={sub=k}){Text(if(k==sub)"• $n" else n,maxLines=1,softWrap=false,fontSize=12.sp)}} }
+    if(sub==0) Text("Birth details / जन्म विवरण",style=MaterialTheme.typography.titleMedium)
+    if(sub==0) Text("Name, date, time and place are all you need to fill in. Nothing is guessed or sent to a server.",style=MaterialTheme.typography.bodySmall)
     @Composable fun field(label:String,value:String,change:(String)->Unit) { OutlinedTextField(value=value,onValueChange=change,label={Text(label)},singleLine=true,modifier=Modifier.fillMaxWidth()) }
-    TrikaalBirthForm(profile){profile=it}
+    if(sub==0) TrikaalBirthForm(profile){profile=it}
     suspend fun calculate(snapshot:TrikaalProfile) {
         busy=true;chart=null;transits=null;status="Calculating on device..."
         val result=withContext(Dispatchers.Default) {
@@ -131,24 +133,25 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
         busy=false
     }
     LaunchedEffect(Unit) { TrikaalProfiles.defaultProfile(context)?.let { profile=it; calculate(it) } }
-    Button(enabled=!busy,onClick={ scope.launch { calculate(profile) } }){Text(if(busy)"Calculating..." else "Calculate / गणना")}
-    Text(status)
-    OutlinedButton(enabled=!busy,onClick={scope.launch{val p=profile;val ok=withContext(Dispatchers.IO){TrikaalProfiles.save(context,p)};profiles=TrikaalProfiles.read(context);status=if(ok)"Saved on this device only." else "Unavailable: profile not saved (up to ${TrikaalProfiles.MAX_PROFILES} profiles; delete one first)."}}){Text("Save locally / सहेजें")}
-    profiles.forEach { p -> Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
+    if(sub==0) Button(enabled=!busy,onClick={ scope.launch { calculate(profile) } }){Text(if(busy)"Calculating..." else "Calculate / गणना")}
+    if(sub==0) Text(status)
+    if(sub==0) OutlinedButton(enabled=!busy,onClick={scope.launch{val p=profile;val ok=withContext(Dispatchers.IO){TrikaalProfiles.save(context,p)};profiles=TrikaalProfiles.read(context);status=if(ok)"Saved on this device only." else "Unavailable: profile not saved (up to ${TrikaalProfiles.MAX_PROFILES} profiles; delete one first)."}}){Text("Save locally / सहेजें")}
+    if(sub==0) profiles.forEach { p -> Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
         TextButton(onClick={profile=p;scope.launch{calculate(p)}}){Text((if(TrikaalProfiles.key(p)==defaultKey)"★ " else "")+"${p.name.ifBlank{"Profile"}} · ${p.date}")}
         Row {
             TextButton(onClick={scope.launch{withContext(Dispatchers.IO){TrikaalProfiles.setDefault(context,p)};defaultKey=TrikaalProfiles.defaultKey(context)}}){Text(if(TrikaalProfiles.key(p)==defaultKey)"Default" else "Make default")}
             TextButton(onClick={scope.launch{withContext(Dispatchers.IO){TrikaalProfiles.delete(context,p)};profiles=TrikaalProfiles.read(context);defaultKey=TrikaalProfiles.defaultKey(context)}}){Text("Delete")}
         }
     } }
-    chart?.let { c ->
+    if(sub!=0 && chart==null) Text("Fill in Birth Details and press Calculate first. / पहले जन्म विवरण भरकर गणना दबाएँ।")
+    if(sub!=0) chart?.let { c ->
         var topic by remember { mutableStateOf(0) }
         var vedic by remember { mutableStateOf(false) }
         var d9 by remember { mutableStateOf(false) }
         HorizontalDivider()
         Text("Kundli / कुंडली",style=MaterialTheme.typography.titleLarge)
         if(c.input.placeLabel?.isNotBlank()==true) Text("Place at birth / जन्म स्थान: ${c.input.placeLabel}",style=MaterialTheme.typography.bodyMedium)
-        run {
+        if(sub==3) run {
             val moonP=c.positions.single{it.graha==Graha.MOON}
             val sp=remember(c){vimshottariDasha(c)}
             val cp=currentPeriod(sp,asOf ?: Instant.now())
@@ -160,18 +163,18 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
                 Text("यह गणना आपके फ़ोन पर हुई है। कुछ भी बाहर नहीं भेजा गया।",style=MaterialTheme.typography.bodySmall)
             } }
         }
-        Text("Lagna / लग्न: ${SIGN_NAMES[c.lagnaRashi]} ${deg(c.lagna%30)}")
-        Text("Moon / चंद्र: ${SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi]}")
-        run {
+        if(sub==3) Text("Lagna / लग्न: ${SIGN_NAMES[c.lagnaRashi]} ${deg(c.lagna%30)}")
+        if(sub==3) Text("Moon / चंद्र: ${SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi]}")
+        if(sub==3) run {
             val spokenPeriods=remember(c){vimshottariDasha(c)}
             val cur=currentPeriod(spokenPeriods,asOf ?: Instant.now())
             ListenButton(listenSummary(SIGN_NAMES[c.lagnaRashi],SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi],cur?.let{"${it.first.lord.label} and ${it.second?.lord?.label ?: "Unavailable"}"}))
         }
-        Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text(if(v==layout)"• $v chart" else "$v chart")}}; TextButton(onClick={d9=false}){Text(if(!d9)"• D-1" else "D-1")}; TextButton(onClick={d9=true}){Text(if(d9)"• D-9" else "D-9")} }
-        if(d9) Text("नवांश (D-9): हर राशि को नौ भागों में बाँटकर बनी कुंडली। परंपरा में इसे रिश्तों की गहराई देखने में सहायक माना जाता है।",style=MaterialTheme.typography.bodySmall)
-        KundliDrawing(if(d9) navamshaChart(c) else c,layout)
-        KundliTopicsPanel(c,asOf ?: Instant.now(),topic,{topic=it},vedic,{vedic=it})
-        if(topic==6) {
+        if(sub==1) Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text(if(v==layout)"• $v chart" else "$v chart")}}; TextButton(onClick={d9=false}){Text(if(!d9)"• D-1" else "D-1")}; TextButton(onClick={d9=true}){Text(if(d9)"• D-9" else "D-9")} }
+        if(sub==1) if(d9) Text("नवांश (D-9): हर राशि को नौ भागों में बाँटकर बनी कुंडली। परंपरा में इसे रिश्तों की गहराई देखने में सहायक माना जाता है।",style=MaterialTheme.typography.bodySmall)
+        if(sub==1) KundliDrawing(if(d9) navamshaChart(c) else c,layout)
+        if(sub==2) KundliTopicsPanel(c,asOf ?: Instant.now(),topic,{topic=it},vedic,{vedic=it})
+        if(sub==2 && topic==6) {
         Row { listOf("Quick","Detailed","Technical").forEach{v->TextButton(onClick={view=v}){Text(if(v==view)"• $v" else v)}} }
 
         c.positions.forEach { p ->
