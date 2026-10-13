@@ -33,7 +33,7 @@ import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private class HoroscopeData(val moonRashi: Int, val name: String, val cards: List<HoroscopeCard>, val dasha: String?, val date: String)
+private class HoroscopeData(val moonRashi: Int, val name: String, val cards: List<HoroscopeCard>, val dasha: String?, val date: String, val chart: Chart? = null)
 
 /**
  * Horoscope tab: today's reading for the saved profile, in four cards (प्रेम, काम, ऊर्जा, सामाजिक).
@@ -63,7 +63,7 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 val cards = horoscopeCardsHi(tr.associate { it.position.graha to it.houseFromMoon }, tara)
                 val cur = currentPeriod(vimshottariDasha(chart), now)
                 val dasha = cur?.let { "चल रही दशा: ${grahaHi(it.first.lord)} महादशा" + (it.second?.let { a -> ", ${grahaHi(a.lord)} अंतर्दशा" } ?: "") }
-                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMM yyyy")))
+                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMM yyyy")), chart)
             } catch (e: Exception) {
                 "सेव की हुई जानकारी पढ़ी नहीं जा सकी। कुंडली टैब में उसे जाँचें।"
             }
@@ -76,6 +76,13 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 Text(s, Modifier.padding(16.dp), color = Color(0xFFFFF4DC))
             }
             is HoroscopeData -> {
+                var period by remember { mutableStateOf(0) }
+                androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    listOf("Daily", "Weekly", "Monthly", "Yearly", "Areas").forEachIndexed { k, n ->
+                        androidx.compose.material3.TextButton(onClick = { period = k }) { Text(if (k == period) "• $n" else n, maxLines = 1, softWrap = false, fontSize = 12.sp) }
+                    }
+                }
+                if (period == 4) { s.chart?.let { TrikaalLifeAreas(it) } } else if (period != 0) TrikaalPeriodOutlook(s.moonRashi, period) else {
                 Text("आज का राशिफल", Modifier.background(Color(0xFF7C3AED), RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 8.dp),
                     color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
                 Text(SIGN_HI[s.moonRashi], fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFF4DC), maxLines = 1)
@@ -94,7 +101,54 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 if (s.cards.isEmpty()) Text("आज के लिए कोई कार्ड नहीं बन सका।", fontSize = 13.sp)
                 s.dasha?.let { Text(it, fontSize = 13.sp, color = Color(0xFFD8CFEA)) }
                 Text("यह गणना वैदिक नियमों (चंद्र राशि से गोचर, तारा बल) पर आपके फ़ोन में हुई है। कुछ भी बाहर नहीं भेजा गया। यह निश्चितता नहीं है।", fontSize = 12.sp, color = Color(0xFFD8CFEA))
+                }
             }
         }
+    }
+}
+
+private val PdFmt = DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLISH)
+
+/** period: 1 weekly (7 days), 2 monthly (30 days), 3 yearly (365 days). */
+@Composable fun TrikaalPeriodOutlook(moonRashi: Int, period: Int) {
+    val days = when (period) { 1 -> 7; 2 -> 30; else -> 365 }
+    var rows by remember(moonRashi, period) { mutableStateOf<List<Pair<Graha, List<PeriodOutlook.Segment>?>>?>(null) }
+    LaunchedEffect(moonRashi, period) {
+        rows = null
+        val now = Instant.now()
+        rows = withContext(Dispatchers.Default) { PeriodOutlook.planetsFor(days).map { it to PeriodOutlook.compute(it, moonRashi, now, days) } }
+    }
+    val zone = ZoneId.systemDefault()
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(listOf("", "Weekly / साप्ताहिक", "Monthly / मासिक", "Yearly / वार्षिक")[period] + " · Moon sign " + SIGN_NAMES[moonRashi], color = Color(0xFFF2C14E), fontWeight = FontWeight.Bold)
+            val r = rows
+            if (r == null) Text("Calculating on this phone...")
+            else {
+                r.forEach { (g, segs) ->
+                    if (segs == null) Text(g.label + ": Unavailable")
+                    else Text(g.label + ": " + segs.mapIndexed { i, sg ->
+                        "house ${sg.house} (" + (if (sg.favourable) "favourable" else "not favourable") + ")" + (if (i == 0) " now" else " from " + PdFmt.format(sg.from.atZone(zone)))
+                    }.joinToString(", then "), fontSize = 14.sp)
+                }
+                Text("Houses are counted from your Moon sign. Favourable or not follows the traditional gochara table, the same as the daily reading. This shows where the planets will be, not a rating or a guarantee.", fontSize = 12.sp)
+            }
+        }
+    }
+}
+
+@Composable fun TrikaalLifeAreas(chart: Chart) {
+    val areas = remember(chart) { LifeAreas.build(chart) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        areas.forEach { a ->
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(a.title, color = Color(0xFFF2C14E), fontWeight = FontWeight.Bold)
+                    Text(a.note, fontSize = 12.sp)
+                    a.houses.forEach { Text(LifeAreas.describe(it), fontSize = 14.sp) }
+                }
+            }
+        }
+        Text("These are the traditional house significations of your birth chart. They list what sits in each house. They are not a rating or a prediction.", fontSize = 12.sp)
     }
 }

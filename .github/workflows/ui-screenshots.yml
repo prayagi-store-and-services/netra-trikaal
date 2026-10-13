@@ -260,6 +260,13 @@ jobs:
               shot("coming-soon-expanded")
               tap("Download PDF")
               shot("kundli-pdf-button-tapped")
+              # save the profile so Horoscope and the Kundli subtabs have data
+              if scroll_to("Save locally", 14):
+                  tap("Save locally")
+                  time.sleep(2)
+                  tap("Make default")
+                  time.sleep(2)
+                  shot("profile-saved")
               # bottom navigation check (v1.0.8+): scroll to top, then tap each tab
               for _i in range(14):
                   sh("shell", "input", "swipe", "540", "700", "540", "1900", "300")
@@ -278,6 +285,16 @@ jobs:
                       if tap_exact(label):
                           time.sleep(2)
                           shot("small-" + tag + "-" + label.lower())
+                          if label == "Kundli":
+                              for st in ["Chart", "Analysis", "Report"]:
+                                  if tap_exact(st):
+                                      time.sleep(3)
+                                      shot("small-" + tag + "-kundli-" + st.lower())
+                          if label == "Horoscope":
+                              for st in ["Weekly", "Monthly", "Yearly", "Areas"]:
+                                  if tap_exact(st):
+                                      time.sleep(5)
+                                      shot("small-" + tag + "-horoscope-" + st.lower())
               sh("shell", "wm", "size", "reset")
               sh("shell", "wm", "density", "reset")
           print("done")
