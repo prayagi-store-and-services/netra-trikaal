@@ -33,7 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /** Bottom navigation tabs (new design). Only screens that have real content get a tab. Unbuilt ones (match making, planned features) are hidden until they work. */
-val TRIKAAL_TABS = listOf("Kundli" to "\u2726", "Horoscope" to "\u2609", "Panchang" to "\u25F7", "Tritiya" to "\u2728", "Settings" to "\u2699")
+val TRIKAAL_TABS = listOf("Kundli" to "\u2726", "Horoscope" to "\u2609", "Panchang" to "\u25F7", "Tritiya" to "\u2728", "Other" to "\u2630", "Settings" to "\u2699")
 
 private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
@@ -110,7 +110,17 @@ private val InsightHm = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Explore Netra Trikaal", style = MaterialTheme.typography.titleMedium, color = Color(0xFFF2C14E))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf(1, 2, 3).forEach { i ->
+            listOf(1, 2).forEach { i ->
+                val (label, icon) = TRIKAAL_TABS[i]
+                Card(Modifier.weight(1f).clickable { onTab(i) }, shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Palette.nightHigh, contentColor = Color(0xFFFFF4DC))) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        Text(icon, color = Color(0xFFF2C14E)); Text(label, maxLines = 1, softWrap = false)
+                    }
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf(3, 4).forEach { i ->
                 val (label, icon) = TRIKAAL_TABS[i]
                 Card(Modifier.weight(1f).clickable { onTab(i) }, shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Palette.nightHigh, contentColor = Color(0xFFFFF4DC))) {
                     Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
