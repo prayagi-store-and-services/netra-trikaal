@@ -110,6 +110,51 @@ object Panchang {
         return Computation.Available(VedicDay(sr, ss, nsr, spans, tithis, date, wd))
     }
 
+
+    // ---- Yoga and Karana (standard Vedic definitions, sidereal Lahiri, calculated on the phone) ----
+    val YOGA_NAMES = listOf("Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana", "Atiganda", "Sukarma", "Dhriti", "Shula", "Ganda", "Vriddhi", "Dhruva",
+        "Vyaghata", "Harshana", "Vajra", "Siddhi", "Vyatipata", "Variyan", "Parigha", "Shiva", "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma", "Indra", "Vaidhriti")
+    private val KARANA_REPEATING = listOf("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanija", "Vishti")
+    data class NamedSpan(val name: String, val start: Instant, val end: Instant) { fun contains(t: Instant) = t >= start && t < end }
+
+    /** Yoga number 0..26 from the Sun plus Moon longitude, one yoga per 13 deg 20 min. */
+    fun yogaIndexAt(t: Instant): Int? = sunMoon(t)?.let { (normalize(it.first + it.second) / (360.0 / 27)).toInt().coerceIn(0, 26) }
+    /** Half-tithi number 0..59 (6 degrees of Moon minus Sun). */
+    fun karanaNumberAt(t: Instant): Int? = elongation(t)?.let { (it / 6.0).toInt().coerceIn(0, 59) }
+    fun karanaName(k: Int): String = when {
+        k == 0 -> "Kimstughna"
+        k >= 57 -> listOf("Shakuni", "Chatushpada", "Naga")[k - 57]
+        else -> KARANA_REPEATING[(k - 1) % 7]
+    }
+
+    private fun spanOf(at: Instant, indexAt: (Instant) -> Int?, limitHours: Long): Pair<Instant, Instant>? {
+        val n = indexAt(at) ?: return null
+        var lo = at; var hi = at.plusSeconds(limitHours * 3600)
+        if (indexAt(hi) == n) return null
+        while (hi.epochSecond - lo.epochSecond > 1) {
+            val mid = Instant.ofEpochSecond((lo.epochSecond + hi.epochSecond) / 2)
+            if (indexAt(mid) == n) lo = mid else hi = mid
+        }
+        val end = hi
+        var a = at.minusSeconds(limitHours * 3600); var b = at
+        if (indexAt(a) == n) return null
+        while (b.epochSecond - a.epochSecond > 1) {
+            val mid = Instant.ofEpochSecond((a.epochSecond + b.epochSecond) / 2)
+            if (indexAt(mid) == n) b = mid else a = mid
+        }
+        return b to end
+    }
+    fun yogaAt(t: Instant): NamedSpan? {
+        val i = yogaIndexAt(t) ?: return null
+        val (s, e) = spanOf(t, ::yogaIndexAt, 40) ?: return null
+        return NamedSpan(YOGA_NAMES[i], s, e)
+    }
+    fun karanaAt(t: Instant): NamedSpan? {
+        val k = karanaNumberAt(t) ?: return null
+        val (s, e) = spanOf(t, ::karanaNumberAt, 20) ?: return null
+        return NamedSpan(karanaName(k), s, e)
+    }
+
     private fun sunSignAt(t: Instant): Int? = sunMoon(t)?.let { (it.first / 30).toInt() }
     /** Last new moon at or before [t]. */
     private fun lastNewMoon(t: Instant): Instant? {
