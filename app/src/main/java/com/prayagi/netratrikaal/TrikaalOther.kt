@@ -43,4 +43,12 @@ import java.time.LocalDate
             Text("Numerology is a traditional belief system, not a science. Read it as general information and for interest.", style = MaterialTheme.typography.bodySmall)
         }
     }
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Gemstones / रत्न", style = MaterialTheme.typography.titleMedium, color = gold)
+            Text("The traditional planet and gemstone pairs in Vedic astrology.", style = MaterialTheme.typography.bodySmall)
+            Gemstones.TABLE.forEach { Text("${it.planet} / ${it.planetHi}: ${it.gem} / ${it.gemHi}") }
+            Text("This is a traditional reference list only. It does not say which stone suits you, and it is not advice to buy anything.", style = MaterialTheme.typography.bodySmall)
+        }
+    }
 }
