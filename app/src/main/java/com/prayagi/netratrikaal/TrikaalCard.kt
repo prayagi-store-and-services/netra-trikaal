@@ -143,6 +143,18 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
         Row { listOf("Quick","Detailed","Technical").forEach{v->TextButton(onClick={view=v}){Text(if(v==view)"• $v" else v)}} }
         Text("Kundli / कुंडली",style=MaterialTheme.typography.titleLarge)
         if(c.input.placeLabel?.isNotBlank()==true) Text("Place at birth / जन्म स्थान: ${c.input.placeLabel}",style=MaterialTheme.typography.bodyMedium)
+        run {
+            val moonP=c.positions.single{it.graha==Graha.MOON}
+            val sp=remember(c){vimshottariDasha(c)}
+            val cp=currentPeriod(sp,asOf ?: Instant.now())
+            val endStr=cp?.first?.end?.atZone(ZoneId.of(c.input.tzId))?.toLocalDate()?.toString()
+            val lines=kundliSummaryHi(c.lagnaRashi,SIGN_LORDS[c.lagnaRashi],moonP.rashi,moonP.nakshatra,moonP.pada,c.houseOf(moonP),cp?.first?.lord,cp?.second?.lord,endStr,c.positions.filter{it.retrograde&&it.graha!=Graha.RAHU&&it.graha!=Graha.KETU}.map{it.graha})
+            Card(Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Night2,contentColor=Cream)) { Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(6.dp)) {
+                Text("आपकी कुंडली, सरल भाषा में",style=MaterialTheme.typography.titleMedium,color=Gold)
+                lines.forEach{Text(it)}
+                Text("यह गणना आपके फ़ोन पर हुई है। कुछ भी बाहर नहीं भेजा गया।",style=MaterialTheme.typography.bodySmall)
+            } }
+        }
         Text("Lagna / लग्न: ${SIGN_NAMES[c.lagnaRashi]} ${deg(c.lagna%30)}")
         Text("Moon / चंद्र: ${SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi]}")
         run {
@@ -150,10 +162,8 @@ private fun deg(value:Double)=String.format(Locale.ROOT,"%.4f°",value)
             val cur=currentPeriod(spokenPeriods,asOf ?: Instant.now())
             ListenButton(listenSummary(SIGN_NAMES[c.lagnaRashi],SIGN_NAMES[c.positions.single{it.graha==Graha.MOON}.rashi],cur?.let{"${it.first.lord.label} and ${it.second?.lord?.label ?: "Unavailable"}"}))
         }
-        if(view!="Quick") {
-            Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text("$v chart")}} }
-            KundliDrawing(c,layout)
-        }
+        Row { listOf("North","South").forEach{v->TextButton(onClick={layout=v}){Text(if(v==layout)"• $v chart" else "$v chart")}} }
+        KundliDrawing(c,layout)
         c.positions.forEach { p ->
             Text("${p.graha.label}: ${SIGN_NAMES[p.rashi]} ${deg(p.degreeInSign)}${if(p.retrograde)" R" else ""}")
             if(view!="Quick") Text("${NAKSHATRA_NAMES[p.nakshatra]} · pada ${p.pada} · house ${c.houseOf(p)}",style=MaterialTheme.typography.bodySmall)
