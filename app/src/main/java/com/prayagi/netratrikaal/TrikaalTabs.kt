@@ -19,7 +19,7 @@ fun TrikaalTabs(place: PanchangPlace, onPlace: (PanchangPlace) -> Unit, onKundli
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         when (tab) {
             0 -> { TrikaalInsights(place); TrikaalContent(onKundli) }
-            1 -> { TrikaalToday(place, 2) }
+            1 -> { TrikaalHoroscope() }
             2 -> { TrikaalTicker(place); TrikaalToday(place, 1) }
             else -> { TrikaalLocationChoice(place, onPlace); com.prayagi.netratrikaal.update.UpdateCheckCard() }
         }
