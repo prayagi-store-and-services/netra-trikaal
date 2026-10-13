@@ -76,6 +76,13 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 Text(s, Modifier.padding(16.dp), color = Color(0xFFFFF4DC))
             }
             is HoroscopeData -> {
+                var period by remember { mutableStateOf(0) }
+                androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    listOf("Daily", "Weekly", "Monthly", "Yearly").forEachIndexed { k, n ->
+                        androidx.compose.material3.TextButton(onClick = { period = k }) { Text(if (k == period) "• $n" else n, maxLines = 1, softWrap = false, fontSize = 13.sp) }
+                    }
+                }
+                if (period != 0) TrikaalPeriodOutlook(s.moonRashi, period) else {
                 Text("आज का राशिफल", Modifier.background(Color(0xFF7C3AED), RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 8.dp),
                     color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
                 Text(SIGN_HI[s.moonRashi], fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFF4DC), maxLines = 1)
@@ -94,6 +101,37 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 if (s.cards.isEmpty()) Text("आज के लिए कोई कार्ड नहीं बन सका।", fontSize = 13.sp)
                 s.dasha?.let { Text(it, fontSize = 13.sp, color = Color(0xFFD8CFEA)) }
                 Text("यह गणना वैदिक नियमों (चंद्र राशि से गोचर, तारा बल) पर आपके फ़ोन में हुई है। कुछ भी बाहर नहीं भेजा गया। यह निश्चितता नहीं है।", fontSize = 12.sp, color = Color(0xFFD8CFEA))
+                }
+            }
+        }
+    }
+}
+
+private val PdFmt = DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLISH)
+
+/** period: 1 weekly (7 days), 2 monthly (30 days), 3 yearly (365 days). */
+@Composable fun TrikaalPeriodOutlook(moonRashi: Int, period: Int) {
+    val days = when (period) { 1 -> 7; 2 -> 30; else -> 365 }
+    var rows by remember(moonRashi, period) { mutableStateOf<List<Pair<Graha, List<PeriodOutlook.Segment>?>>?>(null) }
+    LaunchedEffect(moonRashi, period) {
+        rows = null
+        val now = Instant.now()
+        rows = withContext(Dispatchers.Default) { PeriodOutlook.planetsFor(days).map { it to PeriodOutlook.compute(it, moonRashi, now, days) } }
+    }
+    val zone = ZoneId.systemDefault()
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(listOf("", "Weekly / साप्ताहिक", "Monthly / मासिक", "Yearly / वार्षिक")[period] + " · Moon sign " + SIGN_NAMES[moonRashi], color = Color(0xFFF2C14E), fontWeight = FontWeight.Bold)
+            val r = rows
+            if (r == null) Text("Calculating on this phone...")
+            else {
+                r.forEach { (g, segs) ->
+                    if (segs == null) Text(g.label + ": Unavailable")
+                    else Text(g.label + ": " + segs.mapIndexed { i, sg ->
+                        "house ${sg.house} (" + (if (sg.favourable) "favourable" else "not favourable") + ")" + (if (i == 0) " now" else " from " + PdFmt.format(sg.from.atZone(zone)))
+                    }.joinToString(", then "), fontSize = 14.sp)
+                }
+                Text("Houses are counted from your Moon sign. Favourable or not follows the traditional gochara table, the same as the daily reading. This shows where the planets will be, not a rating or a guarantee.", fontSize = 12.sp)
             }
         }
     }
