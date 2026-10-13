@@ -33,7 +33,7 @@ import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private class HoroscopeData(val moonRashi: Int, val name: String, val cards: List<HoroscopeCard>, val dasha: String?, val date: String)
+private class HoroscopeData(val moonRashi: Int, val name: String, val cards: List<HoroscopeCard>, val dasha: String?, val date: String, val chart: Chart? = null)
 
 /**
  * Horoscope tab: today's reading for the saved profile, in four cards (प्रेम, काम, ऊर्जा, सामाजिक).
@@ -63,7 +63,7 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 val cards = horoscopeCardsHi(tr.associate { it.position.graha to it.houseFromMoon }, tara)
                 val cur = currentPeriod(vimshottariDasha(chart), now)
                 val dasha = cur?.let { "चल रही दशा: ${grahaHi(it.first.lord)} महादशा" + (it.second?.let { a -> ", ${grahaHi(a.lord)} अंतर्दशा" } ?: "") }
-                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMM yyyy")))
+                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMM yyyy")), chart)
             } catch (e: Exception) {
                 "सेव की हुई जानकारी पढ़ी नहीं जा सकी। कुंडली टैब में उसे जाँचें।"
             }
@@ -78,11 +78,11 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
             is HoroscopeData -> {
                 var period by remember { mutableStateOf(0) }
                 androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    listOf("Daily", "Weekly", "Monthly", "Yearly").forEachIndexed { k, n ->
-                        androidx.compose.material3.TextButton(onClick = { period = k }) { Text(if (k == period) "• $n" else n, maxLines = 1, softWrap = false, fontSize = 13.sp) }
+                    listOf("Daily", "Weekly", "Monthly", "Yearly", "Areas").forEachIndexed { k, n ->
+                        androidx.compose.material3.TextButton(onClick = { period = k }) { Text(if (k == period) "• $n" else n, maxLines = 1, softWrap = false, fontSize = 12.sp) }
                     }
                 }
-                if (period != 0) TrikaalPeriodOutlook(s.moonRashi, period) else {
+                if (period == 4) { s.chart?.let { TrikaalLifeAreas(it) } } else if (period != 0) TrikaalPeriodOutlook(s.moonRashi, period) else {
                 Text("आज का राशिफल", Modifier.background(Color(0xFF7C3AED), RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 8.dp),
                     color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
                 Text(SIGN_HI[s.moonRashi], fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFF4DC), maxLines = 1)
@@ -134,5 +134,21 @@ private val PdFmt = DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLIS
                 Text("Houses are counted from your Moon sign. Favourable or not follows the traditional gochara table, the same as the daily reading. This shows where the planets will be, not a rating or a guarantee.", fontSize = 12.sp)
             }
         }
+    }
+}
+
+@Composable fun TrikaalLifeAreas(chart: Chart) {
+    val areas = remember(chart) { LifeAreas.build(chart) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        areas.forEach { a ->
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Palette.night2, contentColor = Color(0xFFFFF4DC))) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(a.title, color = Color(0xFFF2C14E), fontWeight = FontWeight.Bold)
+                    Text(a.note, fontSize = 12.sp)
+                    a.houses.forEach { Text(LifeAreas.describe(it), fontSize = 14.sp) }
+                }
+            }
+        }
+        Text("These are the traditional house significations of your birth chart. They list what sits in each house. They are not a rating or a prediction.", fontSize = 12.sp)
     }
 }
