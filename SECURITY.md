@@ -2,6 +2,10 @@
 
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
+## Listen voice holds audio focus, plus a test button (v1.0.18)
+
+The Listen button (reads the kundli summary aloud) now holds transient audio focus while it speaks, so music or other media pauses and then resumes instead of being talked over (ecosystem rule, 19 Oct 2026). The focus is released when the reading finishes, errors or is stopped, and a watchdog releases it even if the speech engine never calls back. A new "Test" button next to Listen speaks one clearly labelled test line through the same path - it is only a test, never a real reading. No new permission, library or network address; speech still runs fully on the phone.
+
 ## Empty tabs and a not-built button removed (v1.0.12)
 
 The Match tab (said it was not built), the Other tab (a list of planned features) and the floating "PDF soon" button on the kundli view had no working content. They are hidden until they work. The remaining tabs are Kundli, Horoscope, Panchang and Settings. No calculation changed. No new permission, library or network address.
