@@ -1,5 +1,9 @@
 # Security notes - Netra Trikaal
 
+## Verified web link (v1.0.19)
+
+The app now declares a verified web link for its own page, https://prayagi-store-and-services.github.io/netra-eco/app/trikaal. Android opens the link in the app only when the website's assetlinks.json confirms this app's package and signing certificate; otherwise the link stays in the browser. The link is only an entry point: no screen reads data from it, nothing is stored or sent. No new permission, library or server.
+
 Netra Trikaal is an on-device Vedic astrology app by Prayagi Team. It has its own repository and its own releases. It began inside Netra Eco and moved out on 8 October 2026.
 
 ## Listen voice holds audio focus, plus a test button (v1.0.18)
