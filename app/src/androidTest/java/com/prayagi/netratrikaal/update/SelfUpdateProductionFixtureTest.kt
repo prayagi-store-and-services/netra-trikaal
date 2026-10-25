@@ -24,8 +24,8 @@ class SelfUpdateProductionFixtureTest {
   nm.createNotificationChannel(android.app.NotificationChannel("trikaal_update","Legacy updates",3))
   AppUpdater.retireLegacyUpdater(c)
   val limit=System.currentTimeMillis()+10000
-  while(wm.getWorkInfoById(req.id).get().state!=androidx.work.WorkInfo.State.CANCELLED && System.currentTimeMillis()<limit) Thread.sleep(100)
-  assertEquals(androidx.work.WorkInfo.State.CANCELLED,wm.getWorkInfoById(req.id).get().state)
+  while(wm.getWorkInfoById(req.id).get()?.state!=androidx.work.WorkInfo.State.CANCELLED && System.currentTimeMillis()<limit) Thread.sleep(100)
+  assertEquals(androidx.work.WorkInfo.State.CANCELLED,wm.getWorkInfoById(req.id).get()?.state)
   assertNull(nm.getNotificationChannel("trikaal_update"))
   listOf("trikaal_update_notice","netra_app_update","verified_update_artifacts").forEach { assertTrue(c.getSharedPreferences(it,0).all.isEmpty()) }
   assertEquals("yes",unrelated.getString("keep",null));unrelated.edit().clear().commit()
