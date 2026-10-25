@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import java.io.File
 @RunWith(AndroidJUnit4::class)
 class SelfUpdateChoiceDeviceTest {
- @Test fun legacyNotificationIntentCannotOfferDownloadOrInstall() {
+ @Test(timeout = 60_000) fun legacyNotificationIntentCannotOfferDownloadOrInstall() {
   val ins=InstrumentationRegistry.getInstrumentation();val c=ins.targetContext
   val dir=File(c.cacheDir,"updates").apply { mkdirs() };File(dir,"legacy.apk").writeText("old cache")
   val launch=android.content.Intent(c,com.prayagi.netratrikaal.MainActivity::class.java).putExtra("netra_auto_update",true).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -22,7 +22,7 @@ class SelfUpdateChoiceDeviceTest {
    android.os.ParcelFileDescriptor.AutoCloseInputStream(ins.uiAutomation.executeShellCommand("screencap -p /data/local/tmp/centralized-no-updater.png")).use { it.readBytes() }
   }
  }
- @Test fun ecoAbsentDoesNotFallBackToOwnDownload() {
+ @Test(timeout = 60_000) fun ecoAbsentDoesNotFallBackToOwnDownload() {
   val c=InstrumentationRegistry.getInstrumentation().targetContext
   if(c.packageManager.getLaunchIntentForPackage(AppUpdater.ECO_PACKAGE)==null) assertFalse(AppUpdater.openEco(c))
   assertFalse(AppUpdater::class.java.declaredMethods.any { it.name=="download" || it.name=="install" })
