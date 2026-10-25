@@ -11,8 +11,14 @@ class SelfUpdateChoiceDeviceTest {
  @Test(timeout = 60_000) fun legacyNotificationIntentCannotOfferDownloadOrInstall() {
   val ins=InstrumentationRegistry.getInstrumentation();val c=ins.targetContext
   val dir=File(c.cacheDir,"updates").apply { mkdirs() };File(dir,"legacy.apk").writeText("old cache")
-  val launch=android.content.Intent(c,com.prayagi.netratrikaal.MainActivity::class.java).putExtra("netra_auto_update",true).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-  ActivityScenario.launch<com.prayagi.netratrikaal.MainActivity>(launch).use {
+  // The continuously scrolling ticker prevents Instrumentation.startActivitySync from becoming idle.
+  // Launch through Android's ordinary shell route, then verify the actual visible app explicitly.
+  android.os.ParcelFileDescriptor.AutoCloseInputStream(ins.uiAutomation.executeShellCommand(
+   "am start -W -n com.prayagi.netratrikaal/.MainActivity --ez netra_auto_update true")).use { it.readBytes() }
+  try {
+   val visibleDeadline=System.currentTimeMillis()+15000
+   while(ins.uiAutomation.rootInActiveWindow?.packageName?.toString()!=c.packageName && System.currentTimeMillis()<visibleDeadline) Thread.sleep(100)
+   assertEquals("Actual Trikaal window must be visible",c.packageName,ins.uiAutomation.rootInActiveWindow?.packageName?.toString())
    val deadline=System.currentTimeMillis()+10000
    while(dir.exists() && System.currentTimeMillis()<deadline)Thread.sleep(100)
    assertFalse("Legacy APK cache removed",dir.exists())
@@ -20,6 +26,8 @@ class SelfUpdateChoiceDeviceTest {
    val labels=text(ins.uiAutomation.rootInActiveWindow)
    assertFalse(labels.any { it=="Download" || it=="Install" || it.startsWith("Download KBC update") || it.startsWith("Download SensorGuard update") })
    android.os.ParcelFileDescriptor.AutoCloseInputStream(ins.uiAutomation.executeShellCommand("screencap -p /data/local/tmp/centralized-no-updater.png")).use { it.readBytes() }
+  } finally {
+   android.os.ParcelFileDescriptor.AutoCloseInputStream(ins.uiAutomation.executeShellCommand("input keyevent KEYCODE_HOME")).use { it.readBytes() }
   }
  }
  @Test(timeout = 60_000) fun ecoAbsentDoesNotFallBackToOwnDownload() {
