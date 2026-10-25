@@ -9,6 +9,7 @@ android {
 
   defaultConfig {
     applicationId = "com.prayagi.netratrikaal"
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     minSdk = 26
     targetSdk = 36
     versionCode = 20
@@ -54,4 +55,6 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.work.runtime.ktx)
   testImplementation(libs.junit)
+  androidTestImplementation("androidx.test:runner:1.6.2")
+  androidTestImplementation("androidx.test.ext:junit:1.2.1")
 }
