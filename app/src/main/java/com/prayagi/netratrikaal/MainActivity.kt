@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.prayagi.netratrikaal.update.AppUpdater.retireLegacyUpdater(this)
         if (com.prayagi.netratrikaal.geo.GeoGuard.isBlocked(this)) {
             val pad = (24 * resources.displayMetrics.density).toInt()
             val box = android.widget.LinearLayout(this).apply {
@@ -32,18 +33,8 @@ class MainActivity : ComponentActivity() {
             return
         }
         com.prayagi.netratrikaal.festival.JayMataDi.greetIfDue(this)
-        com.prayagi.netratrikaal.update.UpdateWorkScheduler.start(applicationContext)
-        // Ask once (Android 13+) so the "update downloaded" notice can show. Declining changes nothing else.
-        if (android.os.Build.VERSION.SDK_INT >= 33) {
-            val sp = getSharedPreferences("trikaal_update_notice", MODE_PRIVATE)
-            if (!sp.getBoolean("asked", false) &&
-                checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                sp.edit().putBoolean("asked", true).apply()
-                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 7432)
-            }
-        }
         setContent {
-            MaterialTheme { Surface(Modifier.fillMaxSize()) { TrikaalCard(initiallyOpen = true); com.prayagi.netratrikaal.update.LaunchUpdatePrompt() } }
+            MaterialTheme { Surface(Modifier.fillMaxSize()) { TrikaalCard(initiallyOpen = true) } }
         }
     }
 }
