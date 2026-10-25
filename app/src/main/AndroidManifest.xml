@@ -3,14 +3,10 @@
 
     <!-- Optional, asked with a clear yes or no. Used only on the phone; Prayagraj is used if declined. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!-- Only for the optional "Check for update" button in Settings. It reads the latest version from GitHub when you tap it, and about every 6 hours in the background (only when the phone is online) to save a new version so installing is one tap. No personal data is sent. -->
+    <!-- Network access retained for normal app features; no APK downloader remains. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Lets the update button hand the downloaded, checksum-verified file to the Android installer. Android still asks you to confirm. -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Asked once on Android 13+. Used only to tell you that a new version has been downloaded and is ready to install. -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
+    <queries><package android:name="com.prayagi.netraeco" /></queries>
     <application
         android:allowBackup="false"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -36,14 +32,5 @@
                     android:pathPrefix="/netra-eco/app/trikaal" />
             </intent-filter>
         </activity>
-        <provider
-            android:name="com.prayagi.netratrikaal.update.UpdateFileProvider"
-            android:authorities="${applicationId}.updates"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/update_paths" />
-        </provider>
-    </application>
+</application>
 </manifest>

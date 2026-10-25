@@ -8,11 +8,12 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     applicationId = "com.prayagi.netratrikaal"
     minSdk = 26
     targetSdk = 36
-    versionCode = 20
-    versionName = "1.0.19"
+    versionCode = 22
+    versionName = "1.0.21"
   }
 
   signingConfigs {
@@ -54,4 +55,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.work.runtime.ktx)
   testImplementation(libs.junit)
+  androidTestImplementation("androidx.test.ext:junit:1.2.1")
+  androidTestImplementation("androidx.test:runner:1.6.2")
+  androidTestImplementation("androidx.test:core:1.6.1")
 }
