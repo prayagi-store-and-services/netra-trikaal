@@ -52,19 +52,20 @@ fun LaunchUpdatePrompt() {
         },
         confirmButton = {
             TextButton(enabled = !busy && !preloading, onClick = {
+                if (busy) return@TextButton
+                busy = true; failure = null
                 scope.launch {
-                    busy = true; failure = null
                     try {
                         val file = saved
                         if (file == null) {
                             saved = withContext(Dispatchers.IO) { AppUpdater.download(context, r) { _, _ -> } }
                         } else {
-                            AppUpdater.install(context, file)
+                            withContext(Dispatchers.IO) { AppUpdater.install(context, file) }
                         }
                     } catch (e: Exception) {
                         failure = plainFailure(e, "अपडेट नहीं हो सका। Settings में फिर कोशिश करें।")
                     }
-                    busy = false
+                    finally { busy = false }
                 }
             }) { Text(if (busy || preloading) "डाउनलोड हो रहा है..." else if (saved != null) "इंस्टॉल करें" else "डाउनलोड करें") }
         },
