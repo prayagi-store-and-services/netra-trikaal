@@ -6,7 +6,9 @@ proof=$pkg.securityproof
 mkdir -p proof-evidence app/src/androidTest/assets app/src/debug
 python3 - <<'PY'
 p='app/build.gradle.kts'
-s=open(p).read();old='applicationId = "com.prayagi.netratrikaal"';assert s.count(old)==1;s=s.replace(old,old.replace('netratrikaal"','netratrikaal.securityproof"'));open(p,'w').write(s)
+s=open(p).read();old='applicationId = "com.prayagi.netratrikaal"';assert s.count(old)==1;s=s.replace(old,old.replace('netratrikaal"','netratrikaal.securityproof"'));assert 'versionCode = 20' in s
+s=s.replace('versionCode = 20','versionCode = 19') # Disposable candidate only, to exercise actual newer-release Hindi prompt.
+open(p,'w').write(s)
 PY
 cat > app/src/debug/AndroidManifest.xml <<'XML'
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"><queries><package android:name="com.prayagi.netratrikaal" /></queries></manifest>
