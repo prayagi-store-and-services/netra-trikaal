@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** About every 6 hours, online only: when a newer version exists, save it (rules in [PreDownload]) so installing is one tap. */
+/** About every 6 hours, online only: only check release metadata and notify. APK download needs an explicit choice. */
 object UpdateWorkScheduler {
     private const val WORK_NAME = "netra_trikaal_update_save"
 
@@ -31,12 +31,7 @@ class UpdateWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
         try {
             val r = AppUpdater.checkNow(applicationContext)
             if (r is AppUpdater.CheckResult.Newer) {
-                val saved = AppUpdater.savedFile(applicationContext, r.release) != null
-                var ok = saved
-                if (!saved && PreDownload.allowedNow(applicationContext, false, r.release.size)) {
-                    ok = try { AppUpdater.download(applicationContext, r.release); true } catch (_: Exception) { false }
-                }
-                if (ok) UpdateNotice.notifyOnce(applicationContext, r.release)
+                UpdateNotice.notifyOnce(applicationContext, r.release)
             }
         } catch (_: Exception) {
             // Try again at the next run.

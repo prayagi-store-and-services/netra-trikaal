@@ -35,14 +35,7 @@ fun LaunchUpdatePrompt() {
         val r = withContext(Dispatchers.IO) { AppUpdater.checkNow(context) }
         if (r is AppUpdater.CheckResult.Newer) {
             release = r.release
-            // Save the update in the background when the connection allows it, so installing is one tap.
-            preloading = true
-            saved = withContext(Dispatchers.IO) {
-                AppUpdater.savedFile(context, r.release) ?: try {
-                    if (PreDownload.allowedNow(context, false, r.release.size)) AppUpdater.download(context, r.release) else null
-                } catch (e: Exception) { null }
-            }
-            preloading = false
+
         }
     }
     val r = release ?: return
@@ -52,24 +45,29 @@ fun LaunchUpdatePrompt() {
         text = {
             androidx.compose.foundation.layout.Column {
                 Text(if (r.notes.isNotBlank()) r.notes else "सुधार और बग फ़िक्स।")
-                if (saved != null) Text("अपडेट डाउनलोड हो चुका है। इंस्टॉल करने के लिए एक टैप।")
+                if (saved != null) Text("अपडेट डाउनलोड हो चुका है। इंस्टॉल चुनने पर Android की पुष्टि खुलेगी। Play Protect चालू रखें।")
                 if (busy) LinearProgressIndicator(modifier = androidx.compose.ui.Modifier.padding(top = 8.dp))
                 failure?.let { Text(it) }
             }
         },
         confirmButton = {
             TextButton(enabled = !busy && !preloading, onClick = {
+                if (busy) return@TextButton
+                busy = true; failure = null
                 scope.launch {
-                    busy = true; failure = null
                     try {
-                        val file = saved ?: withContext(Dispatchers.IO) { AppUpdater.download(context, r) { _, _ -> } }
-                        AppUpdater.install(context, file)
+                        val file = saved
+                        if (file == null) {
+                            saved = withContext(Dispatchers.IO) { AppUpdater.download(context, r) { _, _ -> } }
+                        } else {
+                            withContext(Dispatchers.IO) { AppUpdater.install(context, file) }
+                        }
                     } catch (e: Exception) {
                         failure = plainFailure(e, "अपडेट नहीं हो सका। Settings में फिर कोशिश करें।")
                     }
-                    busy = false
+                    finally { busy = false }
                 }
-            }) { Text(if (busy || preloading) "डाउनलोड हो रहा है..." else if (saved != null) "इंस्टॉल करें" else "अपडेट करें") }
+            }) { Text(if (busy || preloading) "डाउनलोड हो रहा है..." else if (saved != null) "इंस्टॉल करें" else "डाउनलोड करें") }
         },
         dismissButton = { TextButton(enabled = !busy, onClick = { release = null }) { Text("बाद में") } }
     )
