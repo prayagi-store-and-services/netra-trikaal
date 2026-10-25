@@ -35,11 +35,11 @@ fun UpdateCheckCard(modifier: Modifier = Modifier) {
     var line by remember { mutableStateOf<String?>(null) }
     var frac by remember { mutableStateOf(0f) }
     var ready by remember { mutableStateOf<java.io.File?>(null) }
-    androidx.compose.runtime.LaunchedEffect(Unit) { AppUpdater.cleanStale(context) }
+    androidx.compose.runtime.LaunchedEffect(Unit) { withContext(Dispatchers.IO) { AppUpdater.cleanStale(context) } }
     Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("App version", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-            Text("Checking contacts GitHub only, to read the latest version number. No personal data or birth details are sent. It is checked when you open the app and when you tap the button; nothing runs in the background.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Checking contacts GitHub only, to read the latest version number. No personal data or birth details are sent. It is checked when you open the app, when you tap the button, and by the six-hour metadata notification check. APK downloads require your choice.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Installed: " + AppUpdater.installedVersionName(context), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedButton(enabled = !busy, onClick = {
                 scope.launch {
@@ -76,7 +76,15 @@ fun UpdateCheckCard(modifier: Modifier = Modifier) {
                 ready?.let { f ->
                     if (!busy && f.exists()) {
                         Text("Downloaded. Deleted automatically after it is installed.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        OutlinedButton(onClick = { try { AppUpdater.install(context, f) } catch (e: Exception) { status = plainFailure(e, "Install failed.") } }) { Text("Install downloaded update") }
+                        OutlinedButton(enabled = !busy, onClick = {
+                            if (busy) return@OutlinedButton
+                            busy = true
+                            scope.launch {
+                                try { withContext(Dispatchers.IO) { AppUpdater.install(context, f) } }
+                                catch (e: Exception) { status = plainFailure(e, "Install failed.") }
+                                finally { busy = false }
+                            }
+                        }) { Text("Install downloaded update") }
                     }
                 }
             }
