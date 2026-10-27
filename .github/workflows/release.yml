@@ -98,7 +98,7 @@ jobs:
           set -euo pipefail
           "$APKSIGNER" verify --print-certs app/build/outputs/apk/release/app-release.apk | tee "$RUNNER_TEMP/candidate-certs.txt"
           "$APKSIGNER" verify --print-certs "$RUNNER_TEMP/previous-release/app-release.apk" | tee "$RUNNER_TEMP/previous-certs.txt"
-          EXPECTED=543b46402206ae0022d352f65bea618386bd7aa681b4d5bcfb5ce02bac49c8c4
+          EXPECTED=38bad1b7117f9cd94f8de94e2c9050861b6c7b482ce4241bfb9b4bf3c89fb8d8
           for label in candidate previous; do
             ACTUAL="$(python3 -c 'import re,sys; lines=[s.strip() for s in open(sys.argv[1]) if "certificate SHA-256 digest:" in s]; assert len(lines)==1, "Expected exactly one signer certificate digest"; m=re.fullmatch(r"(?:Signer #1|V2 Signer:) certificate SHA-256 digest: ([0-9a-fA-F]{64})",lines[0]); assert m, "Unrecognized signer certificate format"; print(m[1].lower())' "$RUNNER_TEMP/$label-certs.txt")"
             test "$ACTUAL" = "$EXPECTED"
