@@ -1,192 +1,82 @@
 package com.prayagi.netratrikaal.update
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
-import androidx.core.content.FileProvider
-import androidx.core.content.pm.PackageInfoCompat
-import org.json.JSONObject
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
-import java.security.MessageDigest
 
-/** A newer release described by latest.json (published with every release by the release workflow). */
-data class AppRelease(
-    val tag: String,
-    val versionName: String,
-    val versionCode: Long,
-    val notes: String,
-    val apkUrl: String,
-    val sha256: String,
-    val size: Long
-)
-
-/**
- * In-app updater. Reads latest.json from the repo's latest GitHub release, runs only when the user taps "Check for update",
- * downloads app-release.apk, verifies its sha256 and size, then hands it to the Android package installer
- * (the user confirms with one system tap). Android only installs it if it is signed with the same key as the installed app.
- */
+/** No APK downloader or installer remains. Eco owns app downloads and updates. */
 object AppUpdater {
-    const val REPO = "prayagi-store-and-services/netra-trikaal"
-    const val APP_LABEL = "Trikaal"
-    private const val PREFS = "netra_app_update"
-    private const val KEY_LAST_CHECK = "last_check_ms"
-    private val TAG_RE = Regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$")
-    private val SHA_RE = Regex("^[0-9a-f]{64}$")
-
-    fun latestJsonUrl() = "https://github.com/$REPO/releases/latest/download/latest.json"
-
-    /** Returns the release only when it is newer than [installedCode] and every field passes validation. */
-    fun parse(json: String, installedCode: Long): AppRelease? {
-        return try {
-            val o = JSONObject(json)
-            val tag = o.getString("tag")
-            val code = o.getLong("versionCode")
-            val sha = o.getString("sha256").lowercase()
-            val size = o.getLong("size")
-            if (!TAG_RE.matches(tag) || !SHA_RE.matches(sha) || size <= 0L || code <= installedCode) return null
-            AppRelease(
-                tag = tag,
-                versionName = o.optString("versionName", tag.removePrefix("v")),
-                versionCode = code,
-                notes = o.optString("notes", "").trim(),
-                apkUrl = "https://github.com/$REPO/releases/download/$tag/app-release.apk",
-                sha256 = sha,
-                size = size
-            )
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /** Result of a manual check: on the newest version, a newer release exists, or the check could not be done. */
-    sealed class CheckResult {
-        object Latest : CheckResult()
-        data class Newer(val release: AppRelease) : CheckResult()
-        object Failed : CheckResult()
-    }
-
-    /** Pure decision for a latest.json text: newer release, already latest, or unreadable (Failed). */
-    fun classify(json: String, installedCode: Long): CheckResult {
-        parse(json, installedCode)?.let { return CheckResult.Newer(it) }
-        return try {
-            val code = JSONObject(json).getLong("versionCode")
-            if (code <= installedCode) CheckResult.Latest else CheckResult.Failed
-        } catch (e: Exception) {
-            CheckResult.Failed
-        }
-    }
-
-    /** Manual "Check for update": always asks now (ignores the once-a-day limit). Call off the main thread. */
-    fun checkNow(context: Context): CheckResult {
-        return try {
-            val c = open(latestJsonUrl())
-            if (c.responseCode != 200) return CheckResult.Failed
-            val text = c.inputStream.use { it.readBytes() }
-            if (text.size > 1024 * 1024) return CheckResult.Failed
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(KEY_LAST_CHECK, System.currentTimeMillis()).apply()
-            classify(String(text, Charsets.UTF_8), installedCode(context))
-        } catch (e: Exception) {
-            CheckResult.Failed
-        }
-    }
-
-    fun installedVersionName(context: Context): String =
-        try { context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unavailable" } catch (e: Exception) { "Unavailable" }
-
-    fun installedCode(context: Context): Long =
-        PackageInfoCompat.getLongVersionCode(context.packageManager.getPackageInfo(context.packageName, 0))
-
-    private fun open(url: String): HttpURLConnection {
-        val c = URL(url).openConnection() as HttpURLConnection
-        c.connectTimeout = 10000
-        c.readTimeout = 20000
-        c.instanceFollowRedirects = true
-        c.setRequestProperty("User-Agent", "$APP_LABEL-updater")
-        return c
-    }
-
-    /** Deletes every file in the installer download folder and returns how many were removed. */
-    fun cleanDir(dir: File?): Int {
-        var n = 0
-        dir?.listFiles()?.forEach { if (it.delete()) n++ }
-        return n
-    }
-
-    /**
-     * Called when the app starts. After an in-app update installs, Android restarts the app, so this
-     * removes the downloaded installer file and nothing is left in storage.
-     */
-    fun cleanLeftovers(context: Context) {
+    const val ECO_PACKAGE = "com.prayagi.netraeco"
+    internal val LEGACY_WORK_NAMES = listOf("netra_trikaal_update_save")
+    fun retireLegacyUpdater(context: Context) {
+        val c = context.applicationContext
+        // Some test/disabled-startup contexts have no WorkManager, hence no persisted worker can run there.
         try {
-            val installed = installedVersionName(context)
-            val now = System.currentTimeMillis()
-            File(context.cacheDir, "updates").listFiles()?.forEach { if (!PreDownload.keepFile(it.name, installed, now - it.lastModified())) it.delete() }
-        } catch (_: Exception) {}
-    }
-
-    /** Called when the app comes back to the front. Removes installer files older than one hour (cancelled or finished installs). */
-    fun cleanStale(context: Context) {
-        try {
-            val now = System.currentTimeMillis()
-            val installed = installedVersionName(context)
-            File(context.cacheDir, "updates").listFiles()?.forEach { if (!PreDownload.keepFile(it.name, installed, now - it.lastModified())) it.delete() }
-        } catch (_: Exception) {}
-    }
-
-    /** The verified file for this release when it was already saved in the background (a verified download has exactly the expected size). */
-    fun savedFile(context: Context, release: AppRelease): File? =
-        File(File(context.cacheDir, "updates"), "$APP_LABEL-${release.tag}.apk").takeIf { it.exists() && it.length() == release.size }
-
-    /** Downloads the APK and verifies size and sha256. Deletes the file and throws if anything is off. */
-    fun download(context: Context, release: AppRelease, onProgress: ((Long, Long) -> Unit)? = null): File {
-        val dir = File(context.cacheDir, "updates").apply { mkdirs() }
-        dir.listFiles()?.filter { !it.name.endsWith("-${release.tag}.apk") }?.forEach { it.delete() }
-        val file = File(dir, "$APP_LABEL-${release.tag}.apk")
-        val c = open(release.apkUrl)
-        if (c.responseCode != 200) throw IllegalStateException("Download failed (server answered ${c.responseCode}).")
-        val md = MessageDigest.getInstance("SHA-256")
-        var total = 0L
-        var lastReport = 0L
-        c.inputStream.use { input ->
-            file.outputStream().use { out ->
-                val buf = ByteArray(16384)
-                while (true) {
-                    val n = input.read(buf)
-                    if (n < 0) break
-                    total += n
-                    if (total > release.size) { file.delete(); throw IllegalStateException("Downloaded file is larger than expected.") }
-                    md.update(buf, 0, n)
-                    out.write(buf, 0, n)
-                    if (onProgress != null) { val now = System.currentTimeMillis(); if (now - lastReport >= 250L) { lastReport = now; onProgress(total, release.size) } }
-                }
-            }
+            val wm = androidx.work.WorkManager.getInstance(c)
+            LEGACY_WORK_NAMES.forEach { wm.cancelUniqueWork(it) }
+        } catch (e: IllegalStateException) {
+            android.util.Log.i("UpdaterRetirement", "WorkManager unavailable; legacy worker itself is inert", e)
         }
-        val actual = md.digest().joinToString("") { "%02x".format(it) }
-        if (total != release.size || actual != release.sha256) {
-            file.delete()
-            throw IllegalStateException("The downloaded file did not match its checksum, so it was not installed.")
+        val nm = c.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        nm.cancel(7432)
+        if (android.os.Build.VERSION.SDK_INT >= 26) nm.deleteNotificationChannel("trikaal_update")
+        listOf("trikaal_update_notice", "netra_app_update", "verified_update_artifacts").forEach {
+            c.getSharedPreferences(it, Context.MODE_PRIVATE).edit().clear().apply()
         }
-        return file
+        Thread { File(c.cacheDir, "updates").deleteRecursively() }.start()
     }
-
-    /** Opens the system installer. Throws a readable message when the user must first allow installs from this app. */
-    fun install(context: Context, file: File) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !context.packageManager.canRequestPackageInstalls()) {
-            context.startActivity(
-                Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + context.packageName))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-            throw IllegalStateException("Allow installs from this app, then tap Update again.")
-        }
-        val uri = FileProvider.getUriForFile(context, context.packageName + ".updates", file)
-        context.startActivity(
-            Intent(Intent.ACTION_VIEW)
-                .setDataAndType(uri, "application/vnd.android.package-archive")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-        )
+    const val MIN_ECO_HANDOFF_VERSION = 59L
+    const val ECO_PAGE = "https://prayagi-store-and-services.github.io/netra-eco/app/trikaal/"
+    const val METADATA_URL = "https://github.com/prayagi-store-and-services/netra-trikaal/releases/latest/download/latest.json"
+    data class Newer(val code:Long,val name:String)
+    fun installedCode(context:Context):Long {
+        val p=context.packageManager.getPackageInfo(context.packageName,0)
+        return if(android.os.Build.VERSION.SDK_INT>=28)p.longVersionCode else p.versionCode.toLong()
+    }
+    fun parseNewer(json:String,installed:Long):Newer? {
+        val o=org.json.JSONObject(json)
+        val code=o.getLong("versionCode");require(code>0)
+        if(code<=installed)return null
+        val name=o.optString("versionName","").take(80).filter { !it.isISOControl() }
+        require(name.isNotBlank())
+        return Newer(code,name)
+    }
+    /** Metadata only. Never follows or reads artifact fields, never writes an installer file. */
+    internal fun readMetadata(input:java.io.InputStream):ByteArray {
+        val out=java.io.ByteArrayOutputStream();val b=ByteArray(4096)
+        while(true){val n=input.read(b);if(n<0)break;require(out.size()+n<=131072);out.write(b,0,n)}
+        return out.toByteArray()
+    }
+    // The fixed HTTPS start URL follows the hosting service's redirects. No redirect-host allowlist is claimed.
+    fun newer(context:Context):Newer? {
+        val connection=java.net.URL(METADATA_URL).openConnection() as javax.net.ssl.HttpsURLConnection
+        connection.connectTimeout=10000;connection.readTimeout=10000
+        return try {
+            require(connection.responseCode==200)
+            val bytes=connection.inputStream.use { readMetadata(it) }
+            parseNewer(bytes.toString(Charsets.UTF_8),installedCode(context))
+        } finally { connection.disconnect() }
+    }
+    fun openEco(context: Context): Boolean {
+        val page=android.net.Uri.parse(ECO_PAGE)
+        val compatible=try {
+            val info=context.packageManager.getPackageInfo(ECO_PACKAGE,0)
+            (if(android.os.Build.VERSION.SDK_INT>=28)info.longVersionCode else info.versionCode.toLong())>=MIN_ECO_HANDOFF_VERSION
+        }catch(_:android.content.pm.PackageManager.NameNotFoundException){false}
+        if(compatible)try {
+            context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW,page).setPackage(ECO_PACKAGE).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));return true
+        } catch (_: android.content.ActivityNotFoundException) { } catch (_:SecurityException) { }
+        return try {
+            val browser=android.content.Intent(android.content.Intent.ACTION_VIEW,page).addCategory(android.content.Intent.CATEGORY_BROWSABLE).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Generic web capability, not the target app-link resolver list. Android marks
+            // browsers that handle all web URIs; target-specific app handlers are not browsers.
+            val generic=android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://"))
+                .addCategory(android.content.Intent.CATEGORY_BROWSABLE)
+            val candidates=context.packageManager.queryIntentActivities(generic,android.content.pm.PackageManager.MATCH_DEFAULT_ONLY or android.content.pm.PackageManager.GET_RESOLVED_FILTER)
+            val handler=candidates.firstOrNull {
+                it.filter?.let { filter -> filter.hasDataScheme("https") && filter.countDataAuthorities()==0 && filter.countDataPaths()==0 } == true && it.activityInfo.exported &&
+                it.activityInfo.packageName!=ECO_PACKAGE && it.activityInfo.packageName!=context.packageName
+            } ?: return false
+            context.startActivity(browser.setPackage(handler.activityInfo.packageName));true
+        } catch (_:android.content.ActivityNotFoundException){false} catch (_:SecurityException){false}
     }
 }
