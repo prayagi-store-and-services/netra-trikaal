@@ -38,3 +38,6 @@ Open a private security advisory on this repository (Security tab), or an issue 
 ## Release checks
 
 Releases are built by the Signed Release workflow only after unit tests pass. The APK signature is verified before publishing, and each release lists its size and SHA-256.
+
+## 27 October 2026: metadata-only updates
+Installer permission and APK FileProvider removed. Persisted updater work is inert and legacy caches are retired. Only bounded release metadata is read; Update opens the exact Trikaal page in Eco code 59+ or a generic HTTPS browser excluding Trikaal and Eco. Hosting redirects are followed from the fixed latest.json URL; no host allowlist is claimed. Not a Play compliance certification or Play Protect guarantee.

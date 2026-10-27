@@ -11,8 +11,8 @@ android {
     applicationId = "com.prayagi.netratrikaal"
     minSdk = 26
     targetSdk = 36
-    versionCode = 20
-    versionName = "1.0.19"
+    versionCode = 21
+    versionName = "1.0.20"
   }
 
   signingConfigs {
@@ -43,9 +43,14 @@ android {
     targetCompatibility = JavaVersion.VERSION_11
   }
   buildFeatures { compose = true }
+  testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
 dependencies {
+  testImplementation("org.robolectric:robolectric:4.16.1")
+  testImplementation("androidx.compose.ui:ui-test-junit4")
+  debugImplementation("androidx.compose.ui:ui-test-manifest")
+
   implementation(project(":astro-core"))
   implementation(platform(libs.androidx.compose.bom))
   implementation(libs.androidx.activity.compose)
