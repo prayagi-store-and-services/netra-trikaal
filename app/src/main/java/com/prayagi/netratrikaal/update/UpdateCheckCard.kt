@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 @Composable fun UpdateCheckCard(modifier:Modifier=Modifier, metadataLoader:(android.content.Context)->AppUpdater.Newer?={AutomaticUpdateNotice.check(it)}) {
  val context=LocalContext.current
+ val permission=androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()){ }
  var result by remember { mutableStateOf<AppUpdater.Newer?>(null) }
  var status by remember { mutableStateOf("Checking latest version...") }
  LaunchedEffect(Unit) {
@@ -18,6 +19,7 @@ import kotlinx.coroutines.withContext
  }
  Card(modifier=modifier){ Column(Modifier.padding(16.dp)){
   Text(status)
+  if(android.os.Build.VERSION.SDK_INT>=33 && androidx.core.content.ContextCompat.checkSelfPermission(context,android.Manifest.permission.POST_NOTIFICATIONS)!=android.content.pm.PackageManager.PERMISSION_GRANTED) TextButton(onClick={permission.launch(android.Manifest.permission.POST_NOTIFICATIONS)}){Text("Allow update notifications (optional)")}
   if(result!=null) Button(onClick={if(!AppUpdater.openEco(context))status="Could not open Eco or a browser. Try again."}){Text("Update")}
   Text("Automatic metadata checks run at most once a day, subject to Android battery and network limits. Notifications need your Android permission. Updates open in compatible Netra Ecosystem or this app's Eco website page. No update is downloaded here.")
  } }
