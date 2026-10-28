@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Optional, asked with a clear yes or no. Used only on the phone; Prayagraj is used if declined. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Reads release metadata only. No APK download or install. -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -15,6 +17,7 @@
         android:label="Netra Trikaal"
         android:supportsRtl="true"
         android:theme="@style/Theme.NetraTrikaal">
+        <activity android:name="com.prayagi.netratrikaal.update.EcoUpdateRouteActivity" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
