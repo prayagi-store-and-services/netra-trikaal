@@ -15,6 +15,7 @@
         android:label="Netra Trikaal"
         android:supportsRtl="true"
         android:theme="@style/Theme.NetraTrikaal">
+        <activity android:name="com.prayagi.netratrikaal.update.EcoUpdateRouteActivity" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
