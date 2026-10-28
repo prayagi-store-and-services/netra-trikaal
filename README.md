@@ -2,9 +2,9 @@
 
 Private-by-design Vedic astrology for Android: panchang, kundli, dasha, gochar and daily guidance. Part of the [Netra Eco](https://prayagi-store-and-services.github.io/netra-eco/) family by Prayagi Store and Services.
 
-## Status: first release in preparation
+## Status: released Android app
 
-Trikaal is a separate app (applicationId `com.prayagi.netratrikaal`). Nothing is released yet. Each release is a normal GitHub release with a direct APK link, size and SHA-256, published only when CI is green. Milestone: [Trikaal launch](https://github.com/prayagi-store-and-services/netra-trikaal/milestone/1).
+Trikaal is a separate app (applicationId `com.prayagi.netratrikaal`). Current public release: [v1.0.20](https://github.com/prayagi-store-and-services/netra-trikaal/releases/tag/v1.0.20). Updates are offered through Netra Ecosystem. Signed releases require green checks; this is not a physical-device validation claim.
 
 ## What works today
 
@@ -18,7 +18,7 @@ Planned features (Match Making, Kundli PDF, tithi food guide, face and palm read
 
 ## Principles
 
-- On-device only: no account, no server. INTERNET is used to read the latest version from GitHub (when you tap "Check for update", and about every 6 hours in the background) and to save a new version so installing is one tap; no personal data sent.
+- Core chart calculations and saved profiles stay on the phone. INTERNET also supports version-metadata checks. In v1.0.20 the app no longer downloads or installs APKs: a newer-version notice opens the exact Trikaal update page in compatible Netra Ecosystem or on the Eco website. Do not interpret on-device calculations as a claim that the app never makes a network request.
 - Truthful data: missing means "Unavailable". Nothing is invented. Sources are cited.
 - Readings follow Vedic principles, not scientific certainty. Not medical, legal or financial advice.
 
@@ -34,3 +34,7 @@ Planned features (Match Making, Kundli PDF, tithi food guide, face and palm read
 ## Licence
 
 AGPL-3.0, see [LICENSE](LICENSE).
+
+## Description maintenance
+
+Feature and architecture changes must update the app/store/site/Eco description, README and release notes against shipped behavior. Planned features remain labelled planned.
