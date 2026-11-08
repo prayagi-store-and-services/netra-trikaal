@@ -36,11 +36,16 @@ object TrikaalPlaces {
     fun save(c: Context, lat: Double, lon: Double) {
         c.getSharedPreferences(P, 0).edit().putString("choice", "yes").putLong("lat", lat.toBits()).putLong("lon", lon.toBits()).apply()
     }
+    /** A cached fix older than this is not "current"; callers must use the fresh-fix path instead. */
+    private const val MAX_FIX_AGE_MS = 15 * 60_000L
     @SuppressLint("MissingPermission")
     fun lastKnown(c: Context): Pair<Double, Double>? {
         if (ContextCompat.checkSelfPermission(c, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return null
         val lm = c.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
-        val best = lm.getProviders(true).mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }.maxByOrNull { it.time }
+        val now = System.currentTimeMillis()
+        val best = lm.getProviders(true).mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
+            .filter { it.time > 0 && now - it.time in 0..MAX_FIX_AGE_MS }
+            .maxByOrNull { it.time }
         return best?.let { it.latitude to it.longitude }
     }
 }
