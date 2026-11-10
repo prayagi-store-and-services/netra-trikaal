@@ -63,7 +63,7 @@ private class HoroscopeData(val moonRashi: Int, val name: String, val cards: Lis
                 val cards = horoscopeCardsHi(tr.associate { it.position.graha to it.houseFromMoon }, tara)
                 val cur = currentPeriod(vimshottariDasha(chart), now)
                 val dasha = cur?.let { "चल रही दशा: ${grahaHi(it.first.lord)} महादशा" + (it.second?.let { a -> ", ${grahaHi(a.lord)} अंतर्दशा" } ?: "") }
-                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("d MMM yyyy")))
+                HoroscopeData(natalMoon.rashi, p.name, cards, dasha, LocalDate.now(TrikaalPlaces.load(context).zone).format(DateTimeFormatter.ofPattern("d MMM yyyy")))
             } catch (e: Exception) {
                 "सेव की हुई जानकारी पढ़ी नहीं जा सकी। कुंडली टैब में उसे जाँचें।"
             }

@@ -41,6 +41,24 @@ object TrikaalCities {
         cache = out
         return out
     }
+    /**
+     * IANA zone of the nearest known city, for GPS fixes that carry no timezone of their own.
+     * Equirectangular distance; null when the nearest city is farther than ~250 km (e.g. mid-ocean),
+     * so the caller can fall back honestly. City timezones come from the bundled GeoNames list.
+     */
+    fun nearestZone(c: Context, lat: Double, lon: Double): java.time.ZoneId? {
+        val cities = all(c); if (cities.isEmpty()) return null
+        var best: City? = null; var bestD = Double.MAX_VALUE
+        val cosLat = kotlin.math.cos(Math.toRadians(lat))
+        for (city in cities) {
+            val dy = city.lat - lat; val dx = (city.lon - lon) * cosLat
+            val d = dx * dx + dy * dy
+            if (d < bestD) { bestD = d; best = city }
+        }
+        if (best == null || bestD > 2.5 * 2.5) return null
+        return runCatching { java.time.ZoneId.of(best.tz) }.getOrNull()
+    }
+
     /** Names starting with the query first, then names containing it; biggest places first. At most 8. */
     fun search(all: List<City>, q: String): List<City> {
         val s = q.trim().lowercase(Locale.ROOT)

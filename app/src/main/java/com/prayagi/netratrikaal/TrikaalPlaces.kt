@@ -31,7 +31,11 @@ object TrikaalPlaces {
     fun load(c: Context): PanchangPlace {
         val sp = c.getSharedPreferences(P, 0)
         if (sp.getString("choice", "unset") != "yes" || !sp.contains("lat")) return PRAYAGRAJ
-        return PanchangPlace("Your location", Double.fromBits(sp.getLong("lat", 0)), Double.fromBits(sp.getLong("lon", 0)), ZoneId.systemDefault())
+        val lat = Double.fromBits(sp.getLong("lat", 0)); val lon = Double.fromBits(sp.getLong("lon", 0))
+        // The saved fix has no timezone of its own: use the nearest known city's IANA zone (T01).
+        // The phone's own timezone is only the fallback when no known city is near enough.
+        val zone = TrikaalCities.nearestZone(c, lat, lon) ?: ZoneId.systemDefault()
+        return PanchangPlace("Your location", lat, lon, zone)
     }
     fun save(c: Context, lat: Double, lon: Double) {
         c.getSharedPreferences(P, 0).edit().putString("choice", "yes").putLong("lat", lat.toBits()).putLong("lon", lon.toBits()).apply()
