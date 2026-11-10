@@ -46,15 +46,32 @@ object AppUpdater {
         while(true){val n=input.read(b);if(n<0)break;require(out.size()+n<=131072);out.write(b,0,n)}
         return out.toByteArray()
     }
-    // The fixed HTTPS start URL follows the hosting service's redirects. No redirect-host allowlist is claimed.
+    // Redirect hosts observed for GitHub release metadata: github.com -> release-assets.githubusercontent.com.
+    private val ALLOWED_METADATA_HOSTS=setOf("github.com","release-assets.githubusercontent.com","objects.githubusercontent.com")
+    internal fun isAllowedMetadataUrl(url:String):Boolean = try {
+        val u=java.net.URI(url); u.scheme=="https" && u.host in ALLOWED_METADATA_HOSTS
+    } catch (e:Exception) { false }
+    /** Metadata only. Follows at most 4 redirects manually; every hop must stay HTTPS on a known release host (T07). */
     fun newer(context:Context):Newer? {
-        val connection=java.net.URL(METADATA_URL).openConnection() as javax.net.ssl.HttpsURLConnection
-        connection.connectTimeout=10000;connection.readTimeout=10000
-        return try {
-            require(connection.responseCode==200)
-            val bytes=connection.inputStream.use { readMetadata(it) }
-            parseNewer(bytes.toString(Charsets.UTF_8),installedCode(context))
-        } finally { connection.disconnect() }
+        var url=METADATA_URL
+        repeat(5) {
+            require(isAllowedMetadataUrl(url)) { "update metadata redirect left the trusted release hosts" }
+            val connection=java.net.URL(url).openConnection() as javax.net.ssl.HttpsURLConnection
+            connection.instanceFollowRedirects=false
+            connection.connectTimeout=10000;connection.readTimeout=10000
+            try {
+                val code=connection.responseCode
+                if (code==200) {
+                    val bytes=connection.inputStream.use { readMetadata(it) }
+                    return parseNewer(bytes.toString(Charsets.UTF_8),installedCode(context))
+                }
+                require(code in 300..399) { "unexpected metadata response $code" }
+                val location=connection.getHeaderField("Location")
+                require(!location.isNullOrBlank()) { "redirect without a location" }
+                url=java.net.URI(url).resolve(location).toASCIIString()
+            } finally { connection.disconnect() }
+        }
+        throw IllegalStateException("too many metadata redirects")
     }
     fun openEco(context: Context): Boolean {
         val eco = ecoIntent(context)
