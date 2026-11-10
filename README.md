@@ -4,7 +4,7 @@ Private-by-design Vedic astrology for Android: panchang, kundli, dasha, gochar a
 
 ## Status: released Android app
 
-Trikaal is a separate app (applicationId `com.prayagi.netratrikaal`). Current public release: [v1.0.20](https://github.com/prayagi-store-and-services/netra-trikaal/releases/tag/v1.0.20). Updates are offered through Netra Ecosystem. Signed releases require green checks; this is not a physical-device validation claim.
+Trikaal is a separate app (applicationId `com.prayagi.netratrikaal`). Current public release: [v1.0.21](https://github.com/prayagi-store-and-services/netra-trikaal/releases/tag/v1.0.21). Updates are offered through Netra Ecosystem. Signed releases require green checks; this is not a physical-device validation claim.
 
 ## What works today
 
