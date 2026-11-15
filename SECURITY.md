@@ -1,3 +1,7 @@
+## v1.0.22 - skip spoken announcements while media plays
+
+Behaviour change, not a vulnerability fix, and no vulnerability fix is claimed. The Listen button, Test button and Jay Mata Di greeting is now skipped whenever other media (video or audio) is playing. It no longer pauses, ducks or takes audio focus. The check runs before starting and again right before speaking; if it cannot decide, the announcement is skipped. Known limits: silent video, cast/remote playback and manufacturer-hidden players may not be detected; on Android 13 and older only the music-stream check is available. No new permission, library, endpoint or data. Automated build/test evidence only; not verified on a physical phone.
+
 ## 1.0.21 metadata-only notices
 Daily battery/network-constrained WorkManager checks share a persisted attempt gate with foreground checks. Notification permission and blocked channels are respected; notices are version-deduplicated. Update taps resolve at tap time, falling back to the exact Eco website page if compatible Eco cannot open. No APK handling or install permission. Adds optional POST_NOTIFICATIONS and normal ACCESS_NETWORK_STATE so Android can deliver notices and constrain work; no install permission. No new library, telemetry or server. This is not a vulnerability patch or proof of physical-device battery performance. Release requires final-head CI, independent review and native UI inspection.
 

@@ -95,14 +95,14 @@ internal fun ListenButton(text: String) {
         false -> Text("Listen: Unavailable, this phone has no speech voice installed.")
         else -> Row {
             OutlinedButton(enabled = ready == true, onClick = {
-                if (speaking) { tts.stop(); speaking = false; focus.release() } else {
-                    focus.acquire()
+                if (speaking) { tts.stop(); speaking = false; focus.release() } else if (!MediaPlaybackGuard.isMediaActive(ctx)) {
+                    // Owner rule 15 Nov 2026: skipped while any media plays; no audio focus is taken.
                     tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "trikaal_listen"); speaking = true
                 }
             }) { Text(if (speaking) "Stop" else "Listen") }
             Spacer(Modifier.width(8.dp))
             OutlinedButton(enabled = ready == true && !speaking, onClick = {
-                focus.acquire()
+                if (MediaPlaybackGuard.isMediaActive(ctx)) return@OutlinedButton
                 tts.speak(
                     "Test announcement. The Trikaal listen voice is working.",
                     TextToSpeech.QUEUE_FLUSH, null, "trikaal_listen_test"
